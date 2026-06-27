@@ -793,9 +793,16 @@
   const EMOJI = { agua:'💧', aire:'🌫️', otro:'⚠️' };
   let nextId = 100;
 
-  /* Backend de reportes (server/). Local: localhost:3001.
-     En producción/same-origin, cámbialo por '' o tu URL https. */
-  const BACKEND_URL = 'http://localhost:3001';
+  /* Backend de reportes (server/).
+     - En GitHub Pages (https): usa el túnel público por defecto.
+     - En local: usa localhost:3001.
+     - Override en cualquier lado con ?api=https://tu-backend
+       (útil si el túnel cambia de URL: no hay que volver a publicar). */
+  const BACKEND_URL =
+    new URLSearchParams(location.search).get('api')
+    || (location.hostname.endsWith('github.io')
+          ? 'https://language-theory-const-maker.trycloudflare.com'
+          : 'http://localhost:3001');
 
   /* ── Estado ──────────────────────────────────────────────── */
   const state = {
