@@ -3,233 +3,700 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Último Recurso · Mapa de riesgos del Noreste</title>
+  <title>Último Recurso · Mapa de Riesgos del Noreste</title>
 
-  <!-- Leaflet (mapa open source). Vía CDN: necesita internet para los tiles. -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,800;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
   <style>
-    /* =====================================================================
-       Último Recurso — "el Waze de los riesgos ambientales".
-       Web colaborativa: mapa del Noreste con reportes en vivo.
-       Marca: rombo cian -> azul -> morado sobre fondo oscuro.
-       TODO Dante: este archivo es tuyo. Edita libremente colores, textos,
-       el catálogo de ciudades y los reportes semilla (busca "SEED").
-       ===================================================================== */
-    :root{
-      --from:#1FD3E0; --mid:#3B5BFF; --to:#6B2EFF;
-      --bg:#0b0d17; --panel:#131726; --panel-2:#1b2034;
-      --line:#262c44; --ink:#eef1fb; --muted:#9aa3c7;
-      --alta:#ff4d5e; --media:#ffb020; --baja:#23d6a6;
-      --grad:linear-gradient(135deg,var(--mid),var(--to));
+    /* ============================================================
+       Último Recurso — Nostalgia Sistemas · Docs palette
+       ============================================================ */
+    :root {
+      --ink:      #1F1D1A;
+      --ink-2:    #4D4843;
+      --muted:    #807A72;
+      --ghost:    #B0A898;
+
+      --bg:       #D0CBC0;
+      --surface:  #FBF7EC;
+      --panel:    #EAE2CC;
+      --inset:    #F5EFE0;
+
+      --gold:     #D4A53A;
+      --gold-dim: rgba(212,165,58,0.28);
+      --rosa:     #B84A6B;
+      --green:    #2a7a2a;
+
+      /* Severity */
+      --alta:   #B84A6B;
+      --media:  #D4A53A;
+      --baja:   #2a7a2a;
+
+      --radius-sm: 4px;
+      --radius:    8px;
+      --radius-lg: 12px;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0}
-    body{
-      background:var(--bg); color:var(--ink);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
-      display:grid; grid-template-rows:auto 1fr; height:100vh; overflow:hidden;
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: 'IBM Plex Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
-    /* ---- Header ---- */
-    header{
-      display:flex; align-items:center; gap:14px; padding:12px 18px;
-      border-bottom:1px solid var(--line); background:rgba(19,23,38,.85); backdrop-filter:blur(8px); z-index:1000;
+
+    /* ── HEADER ─────────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+      height: 60px;
+      background: var(--ink);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 1000;
+      flex-shrink: 0;
     }
-    .brand{display:flex; align-items:center; gap:11px}
-    .diamond{width:26px; height:26px; border-radius:7px; background:var(--grad); transform:rotate(45deg);
-      box-shadow:0 0 18px rgba(91,46,255,.55)}
-    .brand h1{font-size:17px; margin:0; letter-spacing:-.02em}
-    .brand .tag{font-size:11.5px; color:var(--muted); margin-top:1px}
-    .live{display:flex; align-items:center; gap:7px; margin-left:6px; font-size:12px; font-weight:700;
-      color:var(--alta); text-transform:uppercase; letter-spacing:.08em}
-    .live .dot{width:9px; height:9px; border-radius:50%; background:var(--alta); box-shadow:0 0 0 0 rgba(255,77,94,.7);
-      animation:pulse 1.6s infinite}
-    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,77,94,.6)}70%{box-shadow:0 0 0 10px rgba(255,77,94,0)}100%{box-shadow:0 0 0 0 rgba(255,77,94,0)}}
-    .stats{display:flex; gap:10px; margin-left:auto}
-    .stat{background:var(--panel-2); border:1px solid var(--line); border-radius:11px; padding:7px 14px; min-width:96px}
-    .stat .v{font-size:20px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums}
-    .stat .k{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:3px}
 
-    /* ---- Layout ---- */
-    .wrap{display:grid; grid-template-columns:1fr 340px; min-height:0}
-    @media(max-width:820px){ .wrap{grid-template-columns:1fr} aside{display:none} }
-    #map{height:100%; width:100%; background:#0b0d17}
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .brand-diamond {
+      width: 24px; height: 24px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--gold), var(--rosa));
+      transform: rotate(45deg);
+      flex-shrink: 0;
+      box-shadow: 0 0 14px rgba(212,165,58,0.4);
+    }
+    .brand h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+      color: var(--surface);
+      margin: 0;
+    }
+    .brand h1 em { color: var(--gold); font-style: normal; }
 
-    aside{border-left:1px solid var(--line); background:var(--panel); display:flex; flex-direction:column; min-height:0}
-    .sec{padding:14px 16px; border-bottom:1px solid var(--line)}
-    .sec h2{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:0 0 10px}
-    .chips{display:flex; flex-wrap:wrap; gap:7px}
-    .chip{font-size:12.5px; font-weight:600; padding:6px 11px; border-radius:999px; border:1px solid var(--line);
-      background:var(--panel-2); color:var(--ink); cursor:pointer; user-select:none; transition:.12s}
-    .chip.off{opacity:.4}
-    .chip .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:middle}
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--alta);
+      margin-left: 4px;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--alta);
+      animation: blink 1.6s infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
 
-    /* ---- Feed en vivo ---- */
-    .feed{flex:1; overflow-y:auto; padding:8px 10px}
-    .card{background:var(--panel-2); border:1px solid var(--line); border-left:3px solid var(--mid);
-      border-radius:10px; padding:10px 12px; margin-bottom:9px; cursor:pointer; transition:.12s;
-      animation:slidein .45s cubic-bezier(.2,.8,.2,1)}
-    .card:hover{border-color:var(--mid); transform:translateX(-2px)}
-    .card.alta{border-left-color:var(--alta)} .card.media{border-left-color:var(--media)} .card.baja{border-left-color:var(--baja)}
-    @keyframes slidein{from{opacity:0; transform:translateY(-8px)}to{opacity:1; transform:none}}
-    .card .top{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:700}
-    .card .emoji{font-size:16px}
-    .card .desc{font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.45}
-    .card .foot{display:flex; align-items:center; gap:8px; margin-top:7px; font-size:11.5px; color:var(--muted)}
-    .badge{font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; padding:2px 7px; border-radius:6px}
-    .badge.alta{color:var(--alta); background:rgba(255,77,94,.13)}
-    .badge.media{color:var(--media); background:rgba(255,176,32,.13)}
-    .badge.baja{color:var(--baja); background:rgba(35,214,166,.13)}
+    /* Header stats */
+    .hd-stats { display: flex; gap: 6px; margin-left: auto; }
+    .hd-stat {
+      display: flex; flex-direction: column;
+      align-items: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-sm);
+      padding: 5px 14px;
+      min-width: 80px;
+    }
+    .hd-stat .v {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 19px;
+      line-height: 1;
+      color: var(--surface);
+      font-variant-numeric: tabular-nums;
+    }
+    .hd-stat .k {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 3px;
+      white-space: nowrap;
+    }
 
-    /* ---- Botones / formulario reportar ---- */
-    .btn{display:inline-flex; align-items:center; justify-content:center; gap:7px; width:100%; font-weight:700; font-size:14px;
-      padding:11px 14px; border-radius:10px; border:none; background:var(--grad); color:#fff; cursor:pointer; transition:.12s}
-    .btn:hover{filter:brightness(1.1)} .btn:disabled{opacity:.5; cursor:default}
-    .btn.ghost{background:var(--panel-2); border:1px solid var(--line); color:var(--ink)}
-    .form{display:none; margin-top:11px}
-    .form.open{display:block}
-    .form label{display:block; font-size:12px; color:var(--muted); margin:9px 0 4px}
-    .form select,.form textarea{width:100%; background:var(--bg); border:1px solid var(--line); border-radius:9px;
-      color:var(--ink); padding:9px 11px; font-size:13.5px; font-family:inherit}
-    .form textarea{resize:none; height:62px}
-    .hint{font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.5}
+    /* City jump buttons in header */
+    .city-jumps {
+      display: flex; gap: 5px; margin-left: 8px;
+    }
+    .city-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      color: var(--ghost);
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm);
+      padding: 4px 9px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .city-btn:hover { border-color: var(--gold); color: var(--gold); }
 
-    /* ---- Pines del mapa ---- */
-    .pin{display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%;
-      font-size:17px; border:2.5px solid #fff; box-shadow:0 3px 12px rgba(0,0,0,.5)}
-    .pin.alta{background:var(--alta)} .pin.media{background:var(--media)} .pin.baja{background:var(--baja)}
-    .pin.drop{animation:drop .5s cubic-bezier(.2,.9,.3,1.3)}
-    @keyframes drop{0%{transform:translateY(-26px) scale(.4); opacity:0}100%{transform:none; opacity:1}}
-    .pin.alta::after{content:""; position:absolute; width:34px; height:34px; border-radius:50%;
-      box-shadow:0 0 0 0 rgba(255,77,94,.6); animation:pulse 1.8s infinite}
+    @media (max-width: 900px) { .city-jumps { display: none; } }
 
-    /* ---- Popup ---- */
-    .leaflet-popup-content-wrapper{background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:13px}
-    .leaflet-popup-tip{background:var(--panel); border:1px solid var(--line)}
-    .leaflet-popup-content{margin:13px 15px; width:228px !important}
-    .pop .ph{height:96px; border-radius:9px; margin-bottom:10px; display:flex; align-items:center; justify-content:center;
-      font-size:34px; background:linear-gradient(135deg,#1c2238,#2a2150)}
-    .pop img{width:100%; height:96px; object-fit:cover; border-radius:9px; margin-bottom:10px}
-    .pop h3{margin:0 0 3px; font-size:15px}
-    .pop .ia{font-size:12.5px; color:var(--muted); line-height:1.5; margin:6px 0 10px}
-    .pop .conf{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink); margin-bottom:10px}
-    .pop .btn{padding:9px}
+    /* ── BODY LAYOUT ────────────────────────────────────────── */
+    .wrap { display: grid; grid-template-columns: 1fr 320px; min-height: 0; }
+    @media (max-width: 820px) {
+      .wrap { grid-template-columns: 1fr; }
+      aside { display: none; }
+    }
 
-    /* ---- Toast ---- */
-    #toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); opacity:0;
-      background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--from);
-      padding:12px 18px; border-radius:12px; font-size:13.5px; font-weight:600; z-index:2000; transition:.3s;
-      box-shadow:0 10px 40px rgba(0,0,0,.5); max-width:90vw}
-    #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+    #map { height: 100%; width: 100%; background: #16140f; }
 
-    .map-hint{position:absolute; top:12px; left:12px; z-index:900; background:rgba(19,23,38,.9);
-      border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:12.5px; color:var(--from);
-      display:none}
-    .map-hint.show{display:block; animation:pulse-soft 1.4s infinite}
-    @keyframes pulse-soft{50%{opacity:.6}}
-    .leaflet-container{cursor:inherit}
-    body.placing .leaflet-container{cursor:crosshair}
+    /* ── ASIDE ───────────────────────────────────────────────── */
+    aside {
+      background: var(--surface);
+      border-left: 1px solid var(--gold-dim);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sec {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gold-dim);
+      flex-shrink: 0;
+    }
+
+    /* Mono section label — same style as Docs "— 01 · Agente IA" */
+    .sec-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--rosa);
+      margin: 0 0 10px;
+      display: block;
+    }
+    .sec-label-muted {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 10px;
+      display: block;
+    }
+
+    /* ── Filter chips ────────────────────────────────────────── */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .chip {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.3px;
+      padding: 5px 11px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--gold-dim);
+      background: var(--inset);
+      color: var(--ink-2);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .chip:hover { border-color: var(--gold); color: var(--ink); }
+    .chip.active {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--surface);
+    }
+    .chip.off { opacity: 0.35; }
+
+    .sev-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Report form ─────────────────────────────────────────── */
+    .report-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px; font-weight: 600;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--gold);
+      color: var(--ink);
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.12s;
+      letter-spacing: 0.1px;
+    }
+    .report-btn:hover   { opacity: 0.9; }
+    .report-btn:active  { transform: scale(0.98); }
+
+    .form { display: none; margin-top: 12px; }
+    .form.open { display: block; }
+
+    /* Step indicators */
+    .form-steps {
+      display: flex; gap: 0; margin-bottom: 14px;
+    }
+    .form-step {
+      flex: 1; text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ghost);
+      padding: 6px 0;
+      border-bottom: 2px solid var(--panel);
+    }
+    .form-step.active {
+      color: var(--ink);
+      border-bottom-color: var(--gold);
+    }
+
+    .form label {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 10px 0 5px;
+    }
+    .form select, .form textarea {
+      width: 100%;
+      background: var(--inset);
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius-sm);
+      color: var(--ink);
+      padding: 9px 11px;
+      font-size: 13px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none;
+    }
+    .form select:focus, .form textarea:focus { border-color: var(--gold); }
+    .form textarea { resize: none; height: 60px; }
+
+    .place-btn {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      width: 100%; margin-top: 10px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px; font-weight: 500;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--gold-dim);
+      background: var(--inset);
+      color: var(--ink-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .place-btn:hover { border-color: var(--gold); color: var(--ink); }
+
+    .form-hint {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11px; font-weight: 300;
+      color: var(--ghost);
+      margin-top: 8px; line-height: 1.5;
+    }
+
+    /* ── FEED ────────────────────────────────────────────────── */
+    .feed { flex: 1; overflow-y: auto; padding: 10px 12px; }
+    .feed::-webkit-scrollbar { width: 3px; }
+    .feed::-webkit-scrollbar-track { background: transparent; }
+    .feed::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+    .card {
+      background: var(--inset);
+      border: 1px solid var(--gold-dim);
+      border-left: 3px solid var(--gold);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 7px;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+      animation: slidein 0.35s cubic-bezier(.2,.8,.2,1);
+    }
+    .card:hover {
+      transform: translateX(-2px);
+      box-shadow: 0 3px 12px rgba(31,29,26,0.10);
+      border-color: var(--gold);
+    }
+    .card.alta  { border-left-color: var(--alta); }
+    .card.media { border-left-color: var(--media); }
+    .card.baja  { border-left-color: var(--baja); }
+
+    @keyframes slidein {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .card-top {
+      display: flex; align-items: center; gap: 7px;
+      font-family: 'Fraunces', serif;
+      font-size: 13px; font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .card-emoji { font-size: 14px; }
+    .card-desc {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11.5px; font-weight: 300;
+      color: var(--ink-2);
+      line-height: 1.45;
+      margin-bottom: 6px;
+    }
+    .card-foot {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--ghost);
+    }
+
+    .badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+    .badge.alta  { color: var(--alta);  background: rgba(184,74,107,0.12); }
+    .badge.media { color: #8a6010;      background: rgba(212,165,58,0.15); }
+    .badge.baja  { color: var(--baja);  background: rgba(42,122,42,0.12); }
+
+    /* ── MAP PINS ────────────────────────────────────────────── */
+    .pin {
+      display: flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 50%;
+      font-size: 15px;
+      border: 2px solid var(--surface);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+    .pin.alta  { background: var(--alta); }
+    .pin.media { background: var(--media); }
+    .pin.baja  { background: var(--baja); }
+    .pin.drop  { animation: drop .45s cubic-bezier(.2,.9,.3,1.3); }
+    @keyframes drop {
+      0%   { transform: translateY(-24px) scale(.4); opacity: 0; }
+      100% { transform: none; opacity: 1; }
+    }
+    .pin.alta::after {
+      content: "";
+      position: absolute;
+      width: 34px; height: 34px; border-radius: 50%;
+      animation: ripple 1.8s infinite;
+    }
+    @keyframes ripple {
+      0%  { box-shadow: 0 0 0 0   rgba(184,74,107,.5); }
+      70% { box-shadow: 0 0 0 9px rgba(184,74,107,0);  }
+      100%{ box-shadow: 0 0 0 0   rgba(184,74,107,0);  }
+    }
+
+    /* ── POPUP ───────────────────────────────────────────────── */
+    .leaflet-popup-content-wrapper {
+      background: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(31,29,26,0.18);
+    }
+    .leaflet-popup-tip { background: var(--surface); }
+    .leaflet-popup-content { margin: 14px 15px; width: 224px !important; }
+
+    .pop .ph {
+      height: 80px; border-radius: var(--radius);
+      margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; background: var(--panel);
+    }
+    .pop img { width: 100%; height: 80px; object-fit: cover; border-radius: var(--radius); margin-bottom: 10px; }
+    .pop h3 {
+      font-family: 'Fraunces', serif; font-weight: 700;
+      font-size: 14px; margin: 0 0 5px; color: var(--ink);
+    }
+    .pop .ia {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 12px; font-weight: 300;
+      color: var(--ink-2); line-height: 1.5; margin: 6px 0 10px;
+    }
+    .pop .conf {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; color: var(--muted);
+      display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+    }
+    .pop-confirm-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 12.5px; font-weight: 600;
+      padding: 9px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--gold);
+      color: var(--ink);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .pop-confirm-btn:hover { opacity: 0.88; }
+
+    /* ── TOAST ───────────────────────────────────────────────── */
+    #toast {
+      position: fixed; left: 50%; bottom: 22px;
+      transform: translateX(-50%) translateY(16px);
+      opacity: 0;
+      background: var(--ink);
+      border-left: 3px solid var(--gold);
+      color: var(--surface);
+      padding: 11px 20px;
+      border-radius: var(--radius-sm);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px; font-weight: 400;
+      z-index: 2000;
+      transition: all 0.28s ease;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.28);
+      max-width: 90vw; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── MAP HINT (placing mode) ─────────────────────────────── */
+    .map-hint {
+      position: absolute; top: 14px; left: 14px; z-index: 900;
+      background: var(--ink); color: var(--gold);
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; letter-spacing: 1px;
+      display: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+      border: 1px solid var(--gold-dim);
+    }
+    .map-hint.show { display: block; animation: pulseSoft 1.4s infinite; }
+    @keyframes pulseSoft { 50% { opacity: .65; } }
+
+    /* ── MAP LEGEND ──────────────────────────────────────────── */
+    .map-legend {
+      position: absolute; bottom: 28px; left: 14px; z-index: 900;
+      background: rgba(31,29,26,0.88);
+      border: 1px solid rgba(212,165,58,0.25);
+      border-radius: var(--radius-sm);
+      padding: 9px 14px;
+      display: flex; flex-direction: column; gap: 6px;
+      backdrop-filter: blur(6px);
+    }
+    .leg-row {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; letter-spacing: 0.5px;
+      color: #B0A898;
+    }
+    .leg-dot {
+      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* Leaflet overrides */
+    .leaflet-container { cursor: inherit; }
+    body.placing .leaflet-container { cursor: crosshair; }
+    .leaflet-control-attribution {
+      font-family: 'IBM Plex Mono', monospace !important;
+      font-size: 9px !important;
+      background: rgba(251,247,236,0.75) !important;
+      color: var(--muted) !important;
+      backdrop-filter: blur(4px);
+    }
+    .leaflet-control-zoom a {
+      color: var(--ink) !important;
+      background: var(--surface) !important;
+      border-color: var(--gold-dim) !important;
+    }
+    .leaflet-control-zoom a:hover { background: var(--panel) !important; }
+
+    /* ── ASIDE FOOTER ────────────────────────────────────────── */
+    .aside-foot {
+      padding: 10px 16px;
+      border-top: 1px solid var(--gold-dim);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+      background: var(--inset);
+    }
+    .aside-foot .wordmark {
+      font-family: 'Fraunces', serif;
+      font-weight: 700; font-size: 13px;
+      color: var(--ink);
+    }
+    .aside-foot .wordmark em { color: var(--gold); font-style: normal; }
+    .aside-foot .powered {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ghost);
+    }
   </style>
 </head>
 <body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
   <header>
     <div class="brand">
-      <div class="diamond"></div>
-      <div>
-        <h1>Último Recurso</h1>
-        <div class="tag">Cuando nadie te avisa, este lo hace · Noreste de México</div>
-      </div>
+      <div class="brand-diamond"></div>
+      <h1>Último Recurso<em>.</em></h1>
     </div>
-    <div class="live"><span class="dot"></span> En vivo</div>
-    <div class="stats">
-      <div class="stat"><div class="v" id="s-activos">0</div><div class="k">Reportes activos</div></div>
-      <div class="stat"><div class="v" id="s-conf">0</div><div class="k">Confirmaciones</div></div>
-      <div class="stat"><div class="v" id="s-zonas">0</div><div class="k">Zonas afectadas</div></div>
+
+    <div class="live-badge">
+      <span class="live-dot"></span> En vivo
+    </div>
+
+    <!-- City quick-jump -->
+    <div class="city-jumps">
+      <button class="city-btn" data-lat="25.6866" data-lng="-100.3161" data-zoom="12">MTY</button>
+      <button class="city-btn" data-lat="25.4232" data-lng="-101.0053" data-zoom="12">SLT</button>
+      <button class="city-btn" data-lat="26.0806" data-lng="-98.2880"  data-zoom="12">REY</button>
+      <button class="city-btn" data-lat="22.2553" data-lng="-97.8686"  data-zoom="12">TAM</button>
+    </div>
+
+    <div class="hd-stats">
+      <div class="hd-stat"><div class="v" id="s-activos">0</div><div class="k">Reportes</div></div>
+      <div class="hd-stat"><div class="v" id="s-conf">0</div><div class="k">Confirmados</div></div>
+      <div class="hd-stat"><div class="v" id="s-zonas">0</div><div class="k">Ciudades</div></div>
     </div>
   </header>
 
+  <!-- ── BODY ────────────────────────────────────────────────── -->
   <div class="wrap">
+
+    <!-- Map column -->
     <div style="position:relative">
       <div id="map"></div>
       <div class="map-hint" id="map-hint">📍 Toca el mapa donde está el problema…</div>
+
+      <!-- Legend -->
+      <div class="map-legend">
+        <div class="leg-row"><span class="leg-dot" style="background:var(--alta)"></span>Severidad alta</div>
+        <div class="leg-row"><span class="leg-dot" style="background:var(--media)"></span>Severidad media</div>
+        <div class="leg-row"><span class="leg-dot" style="background:var(--baja)"></span>Severidad baja</div>
+      </div>
     </div>
 
+    <!-- Sidebar -->
     <aside>
+
+      <!-- Filtros -->
       <div class="sec">
-        <h2>Filtrar por tipo</h2>
-        <div class="chips" id="f-tipo">
+        <span class="sec-label">— Filtrar reportes</span>
+        <div class="chips" id="f-tipo" style="margin-bottom:10px">
           <span class="chip" data-tipo="agua">💧 Agua</span>
           <span class="chip" data-tipo="aire">🌫️ Aire</span>
           <span class="chip" data-tipo="otro">⚠️ Otro</span>
         </div>
-        <h2 style="margin-top:14px">Severidad</h2>
         <div class="chips" id="f-sev">
-          <span class="chip" data-sev="alta"><span class="sw" style="background:var(--alta)"></span>Alta</span>
-          <span class="chip" data-sev="media"><span class="sw" style="background:var(--media)"></span>Media</span>
-          <span class="chip" data-sev="baja"><span class="sw" style="background:var(--baja)"></span>Baja</span>
-        </div>
-        <div class="chips" style="margin-top:14px">
-          <span class="chip" id="toggle-heat">🔥 Mapa de calor</span>
+          <span class="chip" data-sev="alta">
+            <span class="sev-dot" style="background:var(--alta)"></span>Alta
+          </span>
+          <span class="chip" data-sev="media">
+            <span class="sev-dot" style="background:var(--media)"></span>Media
+          </span>
+          <span class="chip" data-sev="baja">
+            <span class="sev-dot" style="background:var(--baja)"></span>Baja
+          </span>
+          <span class="chip" id="toggle-heat">🔥 Calor</span>
         </div>
       </div>
 
+      <!-- Reportar -->
       <div class="sec">
-        <h2>Colabora · reporta tú</h2>
-        <button class="btn" id="btn-reportar">＋ Reportar un problema</button>
+        <span class="sec-label">— Colabora · reporta tú</span>
+        <button class="report-btn" id="btn-reportar">＋ Reportar un problema</button>
+
         <div class="form" id="form">
-          <label>Tipo</label>
+          <!-- Step indicator -->
+          <div class="form-steps">
+            <div class="form-step active" id="step1">1 · Tipo</div>
+            <div class="form-step" id="step2">2 · Detalle</div>
+            <div class="form-step" id="step3">3 · Ubicar</div>
+          </div>
+
+          <label>Tipo de problema</label>
           <select id="r-tipo">
             <option value="agua">💧 Agua</option>
             <option value="aire">🌫️ Aire</option>
             <option value="otro">⚠️ Otro</option>
           </select>
+
           <label>¿Qué notaste?</label>
-          <textarea id="r-desc" placeholder="Ej: salió el agua café y huele raro"></textarea>
-          <button class="btn ghost" id="btn-colocar" style="margin-top:10px">📍 Colocar en el mapa</button>
-          <div class="hint">La IA interpretará tu reporte y lo sumará a la inteligencia colectiva de tu zona.</div>
+          <textarea id="r-desc" placeholder="Ej: salió el agua café y huele raro…"></textarea>
+
+          <button class="place-btn" id="btn-colocar">
+            📍 Colocar pin en el mapa
+          </button>
+          <p class="form-hint">La IA interpretará tu reporte y lo sumará a la inteligencia colectiva de tu zona.</p>
         </div>
       </div>
 
-      <div class="sec" style="padding-bottom:8px"><h2 style="margin:0">Actividad reciente</h2></div>
+      <!-- Feed -->
+      <div class="sec" style="padding-bottom:10px">
+        <span class="sec-label-muted" style="margin-bottom:0">— Actividad reciente</span>
+      </div>
       <div class="feed" id="feed"></div>
+
+      <!-- Brand footer -->
+      <div class="aside-foot">
+        <span class="wordmark">Nostalgia Sistemas<em>.</em></span>
+        <span class="powered">Noreste · 2026</span>
+      </div>
     </aside>
   </div>
 
   <div id="toast"></div>
 
   <script>
-  /* =====================================================================
-     DATOS — reportes semilla (zona Noreste). EDITA / AGREGA aquí (Dante).
-     El esquema es el "contrato" con el Agente de Telegram: el bot crea
-     objetos con esta MISMA forma y la web los pinta igual.
-     ===================================================================== */
+  /* ============================================================
+     DATOS — reportes semilla (Noreste).
+     Esquema compatible con el Agente de Telegram.
+     ============================================================ */
   const SEED = [
-    {id:'r1', tipo:'agua', subtipo:'turbia',          severidad:'alta',  lat:25.6866, lng:-100.3161, colonia:'Centro',         ciudad:'Monterrey',     confirmaciones:7, foto:null, desc:'Agua con alta turbidez y posible sedimento. No apta para consumo.'},
-    {id:'r2', tipo:'aire', subtipo:'mal olor',        severidad:'media', lat:25.7835, lng:-100.1873, colonia:'Apodaca Centro', ciudad:'Apodaca',       confirmaciones:3, foto:null, desc:'Mal olor en el ambiente: posible emisión industrial cercana.'},
-    {id:'r3', tipo:'agua', subtipo:'corte',           severidad:'media', lat:22.2553, lng:-97.8686,  colonia:'Árbol Grande',   ciudad:'Tampico',       confirmaciones:2, foto:null, desc:'Posible corte o falta de suministro de agua en la zona.'},
-    {id:'r4', tipo:'agua', subtipo:'exceso de cloro', severidad:'baja',  lat:25.7417, lng:-100.2826, colonia:'Anáhuac',        ciudad:'San Nicolás',   confirmaciones:1, foto:null, desc:'Olor fuerte a cloro: posible sobrecloración de la red.'},
-    {id:'r5', tipo:'aire', subtipo:'humo',            severidad:'alta',  lat:25.6776, lng:-100.2598, colonia:'La Pastora',     ciudad:'Guadalupe',     confirmaciones:9, foto:null, desc:'Presencia de humo: posible quema cercana que afecta la calidad del aire.'},
-    {id:'r6', tipo:'agua', subtipo:'turbia',          severidad:'media', lat:25.4232, lng:-101.0053, colonia:'Centro',         ciudad:'Saltillo',      confirmaciones:4, foto:null, desc:'Agua turbia reportada en varias casas de la colonia.'},
-    {id:'r7', tipo:'aire', subtipo:'mal olor',        severidad:'media', lat:26.0806, lng:-98.2880,  colonia:'Las Fuentes',    ciudad:'Reynosa',       confirmaciones:3, foto:null, desc:'Olor persistente, posible origen en zona industrial.'},
-    {id:'r8', tipo:'otro', subtipo:'sin clasificar',  severidad:'baja',  lat:23.7369, lng:-99.1411,  colonia:'Centro',         ciudad:'Cd. Victoria',  confirmaciones:1, foto:null, desc:'Reporte recibido, en espera de más detalle de la zona.'},
+    {id:'r1', tipo:'agua', subtipo:'turbia',          severidad:'alta',  lat:25.6866, lng:-100.3161, colonia:'Centro',         ciudad:'Monterrey',   confirmaciones:7, foto:null, desc:'Agua con alta turbidez y posible sedimento. No apta para consumo.'},
+    {id:'r2', tipo:'aire', subtipo:'mal olor',        severidad:'media', lat:25.7835, lng:-100.1873, colonia:'Apodaca Centro', ciudad:'Apodaca',     confirmaciones:3, foto:null, desc:'Mal olor en el ambiente: posible emisión industrial cercana.'},
+    {id:'r3', tipo:'agua', subtipo:'corte',           severidad:'media', lat:22.2553, lng:-97.8686,  colonia:'Árbol Grande',   ciudad:'Tampico',     confirmaciones:2, foto:null, desc:'Posible corte o falta de suministro de agua en la zona.'},
+    {id:'r4', tipo:'agua', subtipo:'exceso de cloro', severidad:'baja',  lat:25.7417, lng:-100.2826, colonia:'Anáhuac',        ciudad:'San Nicolás', confirmaciones:1, foto:null, desc:'Olor fuerte a cloro: posible sobrecloración de la red.'},
+    {id:'r5', tipo:'aire', subtipo:'humo',            severidad:'alta',  lat:25.6776, lng:-100.2598, colonia:'La Pastora',     ciudad:'Guadalupe',   confirmaciones:9, foto:null, desc:'Presencia de humo: posible quema cercana que afecta la calidad del aire.'},
+    {id:'r6', tipo:'agua', subtipo:'turbia',          severidad:'media', lat:25.4232, lng:-101.0053, colonia:'Centro',         ciudad:'Saltillo',    confirmaciones:4, foto:null, desc:'Agua turbia reportada en varias casas de la colonia.'},
+    {id:'r7', tipo:'aire', subtipo:'mal olor',        severidad:'media', lat:26.0806, lng:-98.2880,  colonia:'Las Fuentes',    ciudad:'Reynosa',     confirmaciones:3, foto:null, desc:'Olor persistente, posible origen en zona industrial.'},
+    {id:'r8', tipo:'otro', subtipo:'sin clasificar',  severidad:'baja',  lat:23.7369, lng:-99.1411,  colonia:'Centro',         ciudad:'Cd. Victoria',confirmaciones:1, foto:null, desc:'Reporte recibido, en espera de más detalle de la zona.'},
   ];
 
-  // Pool para el "efecto Waze": reportes que van entrando en vivo.
   const CIUDADES = [
-    {ciudad:'Monterrey',   colonia:'Mitras',        lat:25.7060, lng:-100.3550},
-    {ciudad:'Monterrey',   colonia:'Cumbres',       lat:25.7280, lng:-100.4030},
-    {ciudad:'San Nicolás', colonia:'Casa Bella',    lat:25.7510, lng:-100.2620},
-    {ciudad:'Guadalupe',   colonia:'Linda Vista',   lat:25.6900, lng:-100.2350},
-    {ciudad:'Apodaca',     colonia:'Huinalá',       lat:25.7700, lng:-100.1500},
+    {ciudad:'Monterrey',     colonia:'Mitras',      lat:25.7060, lng:-100.3550},
+    {ciudad:'Monterrey',     colonia:'Cumbres',     lat:25.7280, lng:-100.4030},
+    {ciudad:'San Nicolás',   colonia:'Casa Bella',  lat:25.7510, lng:-100.2620},
+    {ciudad:'Guadalupe',     colonia:'Linda Vista',  lat:25.6900, lng:-100.2350},
+    {ciudad:'Apodaca',       colonia:'Huinalá',     lat:25.7700, lng:-100.1500},
     {ciudad:'Santa Catarina',colonia:'La Fama',     lat:25.6730, lng:-100.4585},
-    {ciudad:'Escobedo',    colonia:'Centro',        lat:25.7970, lng:-100.3160},
-    {ciudad:'Tampico',     colonia:'Smith',         lat:22.2330, lng:-97.8610},
-    {ciudad:'Reynosa',     colonia:'Del Prado',     lat:26.0620, lng:-98.3070},
-    {ciudad:'Matamoros',   colonia:'Jardín',        lat:25.8690, lng:-97.5026},
-    {ciudad:'Saltillo',    colonia:'República',     lat:25.4400, lng:-100.9900},
+    {ciudad:'Escobedo',      colonia:'Centro',      lat:25.7970, lng:-100.3160},
+    {ciudad:'Tampico',       colonia:'Smith',       lat:22.2330, lng:-97.8610},
+    {ciudad:'Reynosa',       colonia:'Del Prado',   lat:26.0620, lng:-98.3070},
+    {ciudad:'Matamoros',     colonia:'Jardín',      lat:25.8690, lng:-97.5026},
+    {ciudad:'Saltillo',      colonia:'República',   lat:25.4400, lng:-100.9900},
   ];
+
   const EVENTOS = [
     {tipo:'agua', subtipo:'turbia',          desc:'Reportan agua café saliendo de la llave.'},
     {tipo:'agua', subtipo:'exceso de cloro', desc:'Olor fuerte a cloro en el agua.'},
@@ -239,116 +706,162 @@
     {tipo:'aire', subtipo:'mal olor',        desc:'Mal olor intenso, posible emisión industrial.'},
   ];
 
-  const EMOJI = {agua:'💧', aire:'🌫️', otro:'⚠️'};
+  const EMOJI = { agua:'💧', aire:'🌫️', otro:'⚠️' };
   let nextId = 100;
 
-  /* ---- Estado ---- */
+  /* ── Estado ──────────────────────────────────────────────── */
   const state = {
     reportes: [],
-    markers: {},                 // id -> L.marker
+    markers:  {},
     tipo: new Set(['agua','aire','otro']),
     sev:  new Set(['alta','media','baja']),
-    heat: null, heatOn:false,
-    placing:false, pendiente:null,
+    heat: null, heatOn: false,
+    placing: false, pendiente: null,
   };
 
-  /* ---- Mapa ---- */
-  const map = L.map('map', {zoomControl:true, attributionControl:true}).setView([25.0, -99.7], 7);
+  /* ── Mapa ────────────────────────────────────────────────── */
+  const map = L.map('map', { zoomControl: true, attributionControl: true })
+               .setView([25.0, -99.7], 7);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19,
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    subdomains: 'abcd', maxZoom: 19,
   }).addTo(map);
 
-  /* ---- Helpers ---- */
-  function icono(r){
+  /* ── Helpers ─────────────────────────────────────────────── */
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+  function icono(r) {
     return L.divIcon({
-      className:'', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-16],
-      html:`<div class="pin ${r.severidad} ${r._nuevo?'drop':''}" style="position:relative">${EMOJI[r.tipo]}</div>`,
+      className: '',
+      iconSize: [34,34], iconAnchor: [17,17], popupAnchor: [0,-16],
+      html: `<div class="pin ${r.severidad}${r._nuevo?' drop':''}" style="position:relative">${EMOJI[r.tipo]}</div>`,
     });
   }
-  function popupHtml(r){
-    const foto = r.foto ? `<img src="${r.foto}" alt="">` : `<div class="ph">${EMOJI[r.tipo]}</div>`;
+
+  function popupHtml(r) {
+    const foto = r.foto
+      ? `<img src="${r.foto}" alt="">`
+      : `<div class="ph">${EMOJI[r.tipo]}</div>`;
     return `<div class="pop">
       ${foto}
       <h3>${EMOJI[r.tipo]} ${cap(r.tipo)} · ${r.subtipo}</h3>
       <span class="badge ${r.severidad}">${r.severidad}</span>
-      <span style="font-size:12px;color:var(--muted)"> · ${r.colonia||''}, ${r.ciudad||''}</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-left:4px">${r.colonia || ''}, ${r.ciudad || ''}</span>
       <div class="ia">${r.desc}</div>
-      <div class="conf">👥 <b>${r.confirmaciones}</b>&nbsp;vecinos confirman esto</div>
-      <button class="btn" onclick="confirmar('${r.id}')">✋ Yo también lo veo</button>
+      <div class="conf">👥 <strong>${r.confirmaciones}</strong>&nbsp;vecinos confirman esto</div>
+      <button class="pop-confirm-btn" onclick="confirmar('${r.id}')">✋ Yo también lo veo</button>
     </div>`;
   }
-  const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
-  function visible(r){ return state.tipo.has(r.tipo) && state.sev.has(r.severidad); }
 
-  /* ---- Render de un reporte ---- */
-  function addReporte(r, animar){
+  function visible(r) {
+    return state.tipo.has(r.tipo) && state.sev.has(r.severidad);
+  }
+
+  /* ── Agregar reporte ─────────────────────────────────────── */
+  function addReporte(r, animar) {
     r._nuevo = !!animar;
     state.reportes.unshift(r);
-    const m = L.marker([r.lat, r.lng], {icon:icono(r)}).bindPopup(popupHtml(r));
+    const m = L.marker([r.lat, r.lng], { icon: icono(r) }).bindPopup(popupHtml(r));
     state.markers[r.id] = m;
     if (visible(r)) m.addTo(map);
     pushFeed(r);
-    if (animar){ setTimeout(()=>{ r._nuevo=false; m.setIcon(icono(r)); }, 600); }
+    if (animar) setTimeout(() => { r._nuevo = false; m.setIcon(icono(r)); }, 500);
     refresh();
   }
 
-  function confirmar(id){
-    const r = state.reportes.find(x=>x.id===id); if(!r) return;
+  function confirmar(id) {
+    const r = state.reportes.find(x => x.id === id);
+    if (!r) return;
     r.confirmaciones++;
     const antes = r.severidad;
-    if (r.confirmaciones>=8) r.severidad='alta';
-    else if (r.confirmaciones>=3 && r.severidad==='baja') r.severidad='media';
+    if (r.confirmaciones >= 8) r.severidad = 'alta';
+    else if (r.confirmaciones >= 3 && r.severidad === 'baja') r.severidad = 'media';
     const m = state.markers[id];
-    m.setIcon(icono(r)); m.setPopupContent(popupHtml(r)); m.openPopup();
-    if (r.severidad!==antes) toast(`⚠️ Alerta reforzada en ${r.colonia||r.ciudad}: subió a severidad ${r.severidad}.`);
-    else toast('✓ Gracias. Tu confirmación refuerza la alerta de la zona.');
+    m.setIcon(icono(r));
+    m.setPopupContent(popupHtml(r));
+    m.openPopup();
+    if (r.severidad !== antes)
+      toast(`⚠️ Alerta reforzada en ${r.colonia || r.ciudad} → severidad ${r.severidad}`);
+    else
+      toast('→ Gracias. Tu confirmación refuerza la alerta.');
     refresh();
   }
   window.confirmar = confirmar;
 
-  /* ---- Feed lateral ---- */
-  function pushFeed(r){
+  /* ── Feed ────────────────────────────────────────────────── */
+  // Time labels pool for simulated freshness
+  const TIME_LABELS = ['hace 1 min','hace 2 min','hace 4 min','hace 7 min','hace 12 min','hace 18 min','hace 25 min'];
+  let feedCount = 0;
+
+  function pushFeed(r) {
     const feed = document.getElementById('feed');
-    const el = document.createElement('div');
-    el.className = `card ${r.severidad}`; el.id = 'f-'+r.id;
-    el.innerHTML = `<div class="top"><span class="emoji">${EMOJI[r.tipo]}</span> ${cap(r.tipo)} · ${r.subtipo}</div>
-      <div class="desc">${r.desc}</div>
-      <div class="foot"><span class="badge ${r.severidad}">${r.severidad}</span> 📍 ${r.colonia||''}, ${r.ciudad||''} · 👥 ${r.confirmaciones}</div>`;
-    el.onclick = ()=>{ map.flyTo([r.lat,r.lng], 12, {duration:.8}); state.markers[r.id].openPopup(); };
+    const el   = document.createElement('div');
+    const timeLabel = TIME_LABELS[Math.min(feedCount, TIME_LABELS.length - 1)];
+    feedCount++;
+    el.className = `card ${r.severidad}`;
+    el.id = 'f-' + r.id;
+    el.innerHTML = `
+      <div class="card-top">
+        <span class="card-emoji">${EMOJI[r.tipo]}</span>
+        ${cap(r.tipo)} · ${r.subtipo}
+      </div>
+      <div class="card-desc">${r.desc}</div>
+      <div class="card-foot">
+        <span class="badge ${r.severidad}">${r.severidad}</span>
+        <span>📍 ${r.colonia || ''}, ${r.ciudad || ''}</span>
+        <span style="margin-left:auto">👥 ${r.confirmaciones}</span>
+      </div>`;
+    el.onclick = () => {
+      map.flyTo([r.lat, r.lng], 13, { duration: 0.75 });
+      state.markers[r.id].openPopup();
+    };
     feed.prepend(el);
-    while (feed.children.length>40) feed.removeChild(feed.lastChild);
+    while (feed.children.length > 40) feed.removeChild(feed.lastChild);
   }
 
-  /* ---- Stats + heatmap + visibilidad ---- */
-  function refresh(){
+  /* ── Stats + heatmap + visibilidad ──────────────────────── */
+  function refresh() {
     const vis = state.reportes.filter(visible);
     document.getElementById('s-activos').textContent = vis.length;
-    document.getElementById('s-conf').textContent = state.reportes.reduce((a,r)=>a+r.confirmaciones,0);
-    document.getElementById('s-zonas').textContent = new Set(vis.map(r=>r.ciudad)).size;
-    // visibilidad de markers según filtros
-    state.reportes.forEach(r=>{
-      const m = state.markers[r.id]; if(!m) return;
-      if (visible(r)){ if(!map.hasLayer(m)) m.addTo(map); }
+    document.getElementById('s-conf').textContent    = state.reportes.reduce((a, r) => a + r.confirmaciones, 0);
+    document.getElementById('s-zonas').textContent   = new Set(vis.map(r => r.ciudad)).size;
+
+    state.reportes.forEach(r => {
+      const m = state.markers[r.id];
+      if (!m) return;
+      if (visible(r)) { if (!map.hasLayer(m)) m.addTo(map); }
       else if (map.hasLayer(m)) map.removeLayer(m);
     });
     updateHeat();
   }
-  function updateHeat(){
+
+  function updateHeat() {
     if (!state.heatOn) return;
-    const w = {alta:1, media:.6, baja:.3};
-    const pts = state.reportes.filter(visible).map(r=>[r.lat, r.lng, w[r.severidad]]);
+    const w   = { alta: 1, media: 0.6, baja: 0.3 };
+    const pts = state.reportes.filter(visible).map(r => [r.lat, r.lng, w[r.severidad]]);
     if (state.heat) map.removeLayer(state.heat);
-    state.heat = L.heatLayer(pts, {radius:38, blur:26, maxZoom:12,
-      gradient:{0.2:'#23d6a6',0.5:'#ffb020',0.9:'#ff4d5e'}}).addTo(map);
+    state.heat = L.heatLayer(pts, {
+      radius: 38, blur: 26, maxZoom: 12,
+      gradient: { 0.2: '#2a7a2a', 0.5: '#D4A53A', 0.9: '#B84A6B' },
+    }).addTo(map);
   }
 
-  /* ---- Filtros ---- */
-  function bindChips(containerId, setRef, key){
-    document.querySelectorAll(`#${containerId} .chip`).forEach(c=>{
-      c.onclick = ()=>{
+  /* ── Filtros ─────────────────────────────────────────────── */
+  function bindChips(containerId, setRef, key) {
+    document.querySelectorAll(`#${containerId} .chip`).forEach(c => {
+      // Init: all active
+      c.classList.add('active');
+      c.onclick = () => {
         const v = c.dataset[key];
-        if (setRef.has(v)){ setRef.delete(v); c.classList.add('off'); }
-        else { setRef.add(v); c.classList.remove('off'); }
+        if (setRef.has(v)) {
+          setRef.delete(v);
+          c.classList.remove('active');
+          c.classList.add('off');
+        } else {
+          setRef.add(v);
+          c.classList.add('active');
+          c.classList.remove('off');
+        }
         refresh();
       };
     });
@@ -356,80 +869,112 @@
   bindChips('f-tipo', state.tipo, 'tipo');
   bindChips('f-sev',  state.sev,  'sev');
 
-  document.getElementById('toggle-heat').onclick = (e)=>{
-    state.heatOn = !state.heatOn; e.target.classList.toggle('off', !state.heatOn);
+  const heatToggle = document.getElementById('toggle-heat');
+  heatToggle.onclick = () => {
+    state.heatOn = !state.heatOn;
+    heatToggle.classList.toggle('active', state.heatOn);
     if (state.heatOn) updateHeat();
-    else if (state.heat){ map.removeLayer(state.heat); state.heat=null; }
+    else if (state.heat) { map.removeLayer(state.heat); state.heat = null; }
   };
 
-  /* ---- Colaborar: reportar desde la web ---- */
-  const form = document.getElementById('form');
-  document.getElementById('btn-reportar').onclick = ()=> form.classList.toggle('open');
-  document.getElementById('btn-colocar').onclick = ()=>{
-    const desc = document.getElementById('r-desc').value.trim();
-    state.pendiente = { tipo: document.getElementById('r-tipo').value, desc };
-    state.placing = true;
+  /* ── City quick-jump ─────────────────────────────────────── */
+  document.querySelectorAll('.city-btn').forEach(btn => {
+    btn.onclick = () => {
+      map.flyTo([+btn.dataset.lat, +btn.dataset.lng], +btn.dataset.zoom, { duration: 0.9 });
+    };
+  });
+
+  /* ── Form: step UX ───────────────────────────────────────── */
+  const form     = document.getElementById('form');
+  const rTipo    = document.getElementById('r-tipo');
+  const rDesc    = document.getElementById('r-desc');
+
+  function updateSteps(step) {
+    document.querySelectorAll('.form-step').forEach((el, i) => {
+      el.classList.toggle('active', i < step);
+    });
+  }
+
+  rTipo.onchange = () => updateSteps(2);
+  rDesc.oninput  = () => { if (rDesc.value.trim()) updateSteps(3); };
+
+  document.getElementById('btn-reportar').onclick = () => {
+    const open = form.classList.toggle('open');
+    if (open) { updateSteps(1); rDesc.value = ''; }
+  };
+
+  document.getElementById('btn-colocar').onclick = () => {
+    const desc = rDesc.value.trim();
+    state.pendiente = { tipo: rTipo.value, desc };
+    state.placing   = true;
     document.body.classList.add('placing');
     document.getElementById('map-hint').classList.add('show');
   };
-  map.on('click', (e)=>{
+
+  map.on('click', (e) => {
     if (!state.placing) return;
-    state.placing = false; document.body.classList.remove('placing');
+    state.placing = false;
+    document.body.classList.remove('placing');
     document.getElementById('map-hint').classList.remove('show');
-    const p = state.pendiente;
-    const ia = interpretar(p.tipo, p.desc);         // "IA" simulada en la web
+    const p  = state.pendiente;
+    const ia = interpretar(p.tipo, p.desc);
     addReporte({
-      id:'r'+(nextId++), tipo:p.tipo, subtipo:ia.subtipo, severidad:ia.severidad,
-      lat:e.latlng.lat, lng:e.latlng.lng, colonia:'Tu ubicación', ciudad:'Noreste',
-      confirmaciones:1, foto:null, desc: ia.desc,
+      id: 'r' + (nextId++), tipo: p.tipo, subtipo: ia.subtipo, severidad: ia.severidad,
+      lat: e.latlng.lat, lng: e.latlng.lng,
+      colonia: 'Tu ubicación', ciudad: 'Noreste',
+      confirmaciones: 1, foto: null, desc: ia.desc,
     }, true);
-    form.classList.remove('open'); document.getElementById('r-desc').value='';
+    form.classList.remove('open');
+    rDesc.value = '';
     toast('✅ ¡Gracias! Tu reporte ya está en el mapa.');
-    map.flyTo([e.latlng.lat, e.latlng.lng], 12, {duration:.8});
+    map.flyTo([e.latlng.lat, e.latlng.lng], 13, { duration: 0.75 });
   });
 
-  // Mini "IA" mock para reportes hechos desde la web (espejo del agente).
-  function interpretar(tipo, texto){
-    const t = (texto||'').toLowerCase();
-    const has = (...k)=>k.some(x=>t.includes(x));
-    if (tipo==='agua'){
-      if (has('cafe','café','turbia','lodo','sucia')) return {subtipo:'turbia', severidad:'alta', desc:'Agua con alta turbidez. No apta para consumo.'};
-      if (has('cloro')) return {subtipo:'exceso de cloro', severidad:'media', desc:'Posible sobrecloración de la red.'};
-      if (has('sin agua','no hay','corte')) return {subtipo:'corte', severidad:'media', desc:'Posible corte de suministro en la zona.'};
-      if (has('espuma')) return {subtipo:'espuma', severidad:'media', desc:'Agua con espuma, posible contaminante.'};
-      return {subtipo:'anomalía', severidad:'media', desc: texto||'Reporte de agua en la zona.'};
+  /* ── Mini IA mock ────────────────────────────────────────── */
+  function interpretar(tipo, texto) {
+    const t   = (texto || '').toLowerCase();
+    const has = (...k) => k.some(x => t.includes(x));
+    if (tipo === 'agua') {
+      if (has('cafe','café','turbia','lodo','sucia')) return {subtipo:'turbia',          severidad:'alta',  desc:'Agua con alta turbidez. No apta para consumo.'};
+      if (has('cloro'))                               return {subtipo:'exceso de cloro', severidad:'media', desc:'Posible sobrecloración de la red.'};
+      if (has('sin agua','no hay','corte'))           return {subtipo:'corte',           severidad:'media', desc:'Posible corte de suministro en la zona.'};
+      if (has('espuma'))                              return {subtipo:'espuma',           severidad:'media', desc:'Agua con espuma, posible contaminante.'};
+      return {subtipo:'anomalía', severidad:'media', desc: texto || 'Reporte de agua en la zona.'};
     }
-    if (tipo==='aire'){
-      if (has('humo','quema','incendio')) return {subtipo:'humo', severidad:'alta', desc:'Humo detectado, afecta la calidad del aire.'};
-      if (has('olor','gas','azufre')) return {subtipo:'mal olor', severidad:'media', desc:'Mal olor, posible emisión industrial.'};
-      return {subtipo:'calidad del aire', severidad:'media', desc: texto||'Reporte de aire en la zona.'};
+    if (tipo === 'aire') {
+      if (has('humo','quema','incendio')) return {subtipo:'humo',            severidad:'alta',  desc:'Humo detectado, afecta la calidad del aire.'};
+      if (has('olor','gas','azufre'))    return {subtipo:'mal olor',         severidad:'media', desc:'Mal olor, posible emisión industrial.'};
+      return {subtipo:'calidad del aire', severidad:'media', desc: texto || 'Reporte de aire en la zona.'};
     }
-    return {subtipo:'sin clasificar', severidad:'baja', desc: texto||'Reporte recibido, requiere más detalle.'};
+    return {subtipo:'sin clasificar', severidad:'baja', desc: texto || 'Reporte recibido, requiere más detalle.'};
   }
 
-  /* ---- Toast ---- */
+  /* ── Toast ───────────────────────────────────────────────── */
   let toastT;
-  function toast(msg){
-    const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
-    clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('show'), 3200);
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => el.classList.remove('show'), 3400);
   }
 
-  /* ---- Arranque ---- */
-  SEED.forEach(r=>addReporte(r, false));
-  // Encuadra el mapa a todos los pines del Noreste.
+  /* ── Arranque ────────────────────────────────────────────── */
+  SEED.forEach(r => addReporte(r, false));
   const grupo = L.featureGroup(Object.values(state.markers));
   map.fitBounds(grupo.getBounds().pad(0.15));
 
-  /* ---- Motor "efecto Waze": entran reportes en vivo ---- */
-  setInterval(()=>{
-    const c = CIUDADES[Math.floor(Math.random()*CIUDADES.length)];
-    const ev = EVENTOS[Math.floor(Math.random()*EVENTOS.length)];
-    const jit = ()=> (Math.random()-.5)*0.05;
-    const sev = Math.random()<.25 ? 'alta' : Math.random()<.6 ? 'media' : 'baja';
+  /* ── Efecto Waze: reportes en vivo ───────────────────────── */
+  setInterval(() => {
+    const c   = CIUDADES[Math.floor(Math.random() * CIUDADES.length)];
+    const ev  = EVENTOS[Math.floor(Math.random() * EVENTOS.length)];
+    const jit = () => (Math.random() - 0.5) * 0.05;
+    const sev = Math.random() < 0.25 ? 'alta' : Math.random() < 0.6 ? 'media' : 'baja';
     addReporte({
-      id:'r'+(nextId++), tipo:ev.tipo, subtipo:ev.subtipo, severidad:sev,
-      lat:c.lat+jit(), lng:c.lng+jit(), colonia:c.colonia, ciudad:c.ciudad,
-      confirmaciones:1, foto:null, desc:ev.desc,
+      id: 'r' + (nextId++), tipo: ev.tipo, subtipo: ev.subtipo, severidad: sev,
+      lat: c.lat + jit(), lng: c.lng + jit(),
+      colonia: c.colonia, ciudad: c.ciudad,
+      confirmaciones: 1, foto: null, desc: ev.desc,
     }, true);
   }, 7000);
   </script>
