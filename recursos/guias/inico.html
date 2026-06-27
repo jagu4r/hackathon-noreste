@@ -1,0 +1,337 @@
+<title>Hackathon Hyperdigital × Google — Guía del participante</title>
+<meta name="description" content="Todo lo que tu equipo necesita: las herramientas de Hyperdigital, el proyecto de referencia, las guías por nivel, retos sugeridos y cómo destacar.">
+
+<style>
+  :root{
+    --ink:#1c1d28;--ink-strong:#170175;--muted:#5c5f72;--accent:#3F00FF;--accent-weak:#efeaff;
+    --line:#e9e7f3;--line-strong:#d8d4ec;--bg:#ffffff;--bg-alt:#f7f5fd;--code-bg:#0e1018;
+    --ok:#0a7d4d;--ok-bg:#eef8f2;--ok-line:#bfe6d2;--warn:#9a6300;--warn-bg:#fdf6e9;--warn-line:#f0dcad;
+    --danger:#c0392b;--danger-bg:#fdf0ee;--danger-line:#f2cdc7;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,monospace;--maxw:1040px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline;text-underline-offset:2px}
+  h1,h2,h3,h4{color:var(--ink-strong);line-height:1.25;letter-spacing:-.018em;font-weight:700}
+  p{margin:0 0 16px}
+  code{font-family:var(--mono);font-size:.875em}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:14px;height:60px;max-width:1180px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.02em;color:var(--ink-strong)}
+  .brand .logo{height:18px;width:auto;display:block}
+  .brand .sep{color:var(--line-strong);font-weight:400}
+  .brand .doc{color:var(--muted);font-weight:600;font-size:15px}
+  nav.top .links{margin-left:auto;display:flex;gap:20px;font-size:14.5px;font-weight:500}
+  nav.top .links a{color:var(--muted)}nav.top .links a:hover{color:var(--ink-strong);text-decoration:none}
+  @media(max-width:820px){nav.top .links{display:none}}
+  header.hero{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#faf9fe,#fff)}
+  header.hero .wrap{padding-top:66px;padding-bottom:54px}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  header.hero h1{font-size:clamp(36px,5.5vw,56px);margin:0 0 18px;max-width:20ch}
+  header.hero .lead{font-size:clamp(18px,2.2vw,22px);color:var(--muted);max-width:60ch;margin:0 0 26px}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px}
+  .meta-row b{color:var(--ink-strong);font-weight:600}
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  section:nth-of-type(even){background:var(--bg-alt)}
+  section h2{font-size:clamp(25px,3vw,32px);margin:0 0 10px}
+  section .lede{color:var(--muted);font-size:18px;max-width:66ch;margin:0 0 28px}
+  .seclabel{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  h3.sub{font-size:20px;margin:30px 0 10px}
+  .callout{border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:16px 20px;margin:20px 0;background:#fff}
+  .callout .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 5px}
+  .callout p{margin:0;color:var(--ink)}.callout p+p{margin-top:8px}
+  .callout.simple{border-left-color:var(--accent);background:var(--accent-weak)}.callout.simple .lbl{color:var(--accent)}
+  .callout.note{border-left-color:var(--accent)}.callout.note .lbl{color:var(--accent)}
+  .callout.tip{border-left-color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line)}.callout.tip .lbl{color:var(--ok)}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-bg);border-color:var(--warn-line)}.callout.warn .lbl{color:var(--warn)}
+  .cardgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+  @media(max-width:760px){.cardgrid{grid-template-columns:1fr}}
+  .navcard{position:relative;border:1px solid var(--line);border-radius:12px;padding:24px;background:#fff;display:flex;flex-direction:column;transition:.14s}
+  .navcard:hover{border-color:var(--accent);box-shadow:0 10px 30px -18px rgba(63,0,255,.4);text-decoration:none;transform:translateY(-2px)}
+  .navcard .role{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+  .navcard h3{font-size:21px;margin:0 0 10px}
+  .navcard p{color:var(--muted);font-size:15px;margin:0 0 14px;flex:1}
+  .navcard .give{font-size:13.5px;background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;padding:10px 13px;margin-bottom:16px;color:var(--ink)}
+  .navcard .give b{color:var(--ink-strong)}
+  .navcard .go{font-weight:600;font-size:15px;color:var(--accent);align-self:flex-start}
+  .navcard .badge{position:absolute;top:18px;right:18px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:4px 9px;border-radius:6px;background:var(--accent-weak);color:var(--accent)}
+  .levels{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+  @media(max-width:780px){.levels{grid-template-columns:1fr}}
+  .lvl{border:1px solid var(--line);border-radius:12px;padding:22px;background:#fff}
+  .lvl h3{margin:0 0 12px;font-size:18px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .lvl ol{margin:0;padding-left:20px;font-size:15px;color:var(--muted)}.lvl li{margin:9px 0}
+  .filterbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
+  .fbtn{border:1px solid var(--line-strong);background:#fff;color:var(--muted);border-radius:999px;padding:7px 16px;font-weight:600;font-size:14px;cursor:pointer;font-family:var(--sans);transition:.12s}
+  .fbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .fbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .retos{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:18px 0}
+  .reto{border:1px solid var(--line);border-radius:11px;padding:20px;background:#fff;transition:.18s}
+  .reto.hide{display:none}
+  .reto h3{margin:0 0 7px;font-size:17px}
+  .reto p{margin:0;color:var(--muted);font-size:14.5px}
+  .reto .lvl-tag{display:inline-block;margin-top:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);background:var(--accent-weak);padding:3px 9px;border-radius:5px}
+  ul.clean{list-style:none;padding:0;margin:18px 0;display:flex;flex-direction:column;gap:11px}
+  ul.clean li{padding-left:24px;position:relative;color:var(--ink)}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  ul.clean li b{color:var(--ink-strong)}
+  .faq{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:22px;background:#fff}
+  details{border-bottom:1px solid var(--line)}details:last-child{border-bottom:none}
+  summary{cursor:pointer;padding:17px 20px;font-weight:600;font-size:16.5px;color:var(--ink-strong);list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--accent);font-size:22px;font-weight:700}
+  details[open] summary::after{content:"–"}
+  details .a{padding:0 20px 18px;color:var(--muted);font-size:15.5px}
+  code.inl{background:var(--accent-weak);color:var(--accent);padding:2px 6px;border-radius:5px}
+  footer{padding:42px 0;text-align:center;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--bg-alt)}
+  footer a{color:var(--accent)}footer .brand{justify-content:center;margin-bottom:10px}
+  footer .flinks{margin-top:6px;line-height:2.1}
+  .anchor{scroll-margin-top:76px}
+</style>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand"><svg class="logo" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg><span class="sep">/</span><span class="doc">Hackathon</span></span>
+    <span class="links">
+      <a href="#herramientas">Herramientas</a>
+      <a href="#proyecto">Proyecto</a>
+      <a href="#guias">Guías</a>
+      <a href="#retos">Retos</a>
+      <a href="#ayuda">Ayuda</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Hackathon · Hyperdigital × Google · Sábado 27 de junio de 2026</p>
+    <h1>Bienvenido. Hoy construyes algo real.</h1>
+    <p class="lead">Te prestamos las mismas herramientas con las que creamos productos en Hyperdigital. No importa si es tu primera línea de código o si llevas años: aquí hay un camino para ti.</p>
+    <div class="meta-row">
+      <span><b>Herramientas</b> listas para usar</span>
+      <span><b>Un proyecto</b> de referencia</span>
+      <span><b>Guías</b> por nivel</span>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="bienvenida" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Empieza por aquí</p>
+    <h2>¿Qué es esto, en pocas palabras?</h2>
+    <div class="callout simple">
+      <p class="lbl">Si nunca has venido a un hackathon</p>
+      <p>Un hackathon es como un día de manualidades, pero con tecnología. Te juntas en equipo, tienes una idea y la construyes en pocas horas. No tienes que terminar algo perfecto — lo divertido es crear y aprender. Aquí te damos piezas ya hechas para que armes más rápido.</p>
+    </div>
+    <p class="lede">Para que no te pierdas, dividimos todo en tres tipos de recurso:</p>
+    <ul class="clean">
+      <li><b>Herramientas</b> — cosas que <em>usas</em> en tu proyecto: Orwel (analítica) y Hyper Skills (poderes para tu IA).</li>
+      <li><b>Proyecto de referencia</b> — algo que <em>estudias</em> para aprender a construir: TeamUp.</li>
+      <li><b>Guías</b> — para <em>aprender</em>: desde lo más básico hasta lo más avanzado.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="herramientas" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Herramientas</p>
+    <h2>Lo que puedes usar hoy</h2>
+    <p class="lede">Listas para meter en tu proyecto desde el primer minuto.</p>
+    <div class="cardgrid">
+      <a class="navcard" href="orwel-kit.html" target="_blank" rel="noopener">
+        <span class="badge">Listo para usar</span>
+        <span class="role">Mide tu producto</span>
+        <h3>Orwel</h3>
+        <p>Nuestra herramienta de analítica. Sabe quién entra a tu sitio, qué hace, cuándo se vuelve cliente, e incluso deduce su personalidad. Se instala en minutos y la llave es gratis.</p>
+        <div class="give"><b>Incluye:</b> SDK completo, llave gratis, API para construir encima, personalidades, y una skill que lo instala por ti.</div>
+        <span class="go">Abrir el Kit de Orwel →</span>
+      </a>
+      <a class="navcard" href="skills-catalogo.html" target="_blank" rel="noopener">
+        <span class="badge">Pack de IA</span>
+        <span class="role">Acelera con IA</span>
+        <h3>Hyper Skills</h3>
+        <p>Las skills son poderes que le instalas a tu asistente de IA (Claude Code, Gemini, Cursor…). Le enseñan a generar SDKs, backends, documentación o papers siguiendo nuestros estándares.</p>
+        <div class="give"><b>Incluye:</b> 8 skills listas para soltar en tu proyecto y trabajar mucho más rápido.</div>
+        <span class="go">Abrir el catálogo de skills →</span>
+      </a>
+    </div>
+    <div class="callout note">
+      <p class="lbl">Dónde van las skills</p>
+      <p>Se copian a <code class="inl">.claude/skills/</code> en tu proyecto. El paso a paso está en <a href="primeros-pasos.html" target="_blank" rel="noopener">Primeros Pasos, sección 7</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section id="proyecto" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Proyecto de referencia</p>
+    <h2>Algo que estudias para aprender a construir</h2>
+    <p class="lede">No es una herramienta que instalas — es el plano de un producto real, para que aprendas los patrones y armes el tuyo.</p>
+    <div class="cardgrid" style="grid-template-columns:1fr">
+      <a class="navcard" href="teamup-papers.html" target="_blank" rel="noopener">
+        <span class="badge">Blueprint + curso de IA</span>
+        <span class="role">Aprende a construir</span>
+        <h3>TeamUp</h3>
+        <p>Nuestro producto de reclutamiento con IA. Te damos su arquitectura, su design system y —lo más valioso— un curso práctico de IA: límites de los modelos, peticiones grandes, prompts, embeddings, RAG, agentes y cuándo NO usar IA.</p>
+        <div class="give"><b>Incluye:</b> arquitectura multi-tenant, diseño responsive, prompts de scaffolding, y las lecciones de IA que aprendimos en producción.</div>
+        <span class="go">Abrir el Playbook de TeamUp →</span>
+      </a>
+      <a class="navcard" href="teamup-demo.html" target="_blank" rel="noopener">
+        <span class="badge">Demo interactivo</span>
+        <span class="role">Pruébalo, no lo leas</span>
+        <h3>TeamUp Demo</h3>
+        <p>Un ATS completo y simulado: carga masiva, análisis de CV, taxonomía de habilidades, scoring con IA, bolsa de trabajo, postulaciones y atribución. Cada sección se explica en pantalla, como un cómic.</p>
+        <div class="give"><b>Incluye:</b> 8 secciones funcionales (mock), con tira de cómic, consejo y código en cada una. Sin login, sin instalar nada.</div>
+        <span class="go">Abrir el Demo Interactivo →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="guias" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Guías</p>
+    <h2>Aprende a tu ritmo</h2>
+    <p class="lede">Cada herramienta y proyecto ya tiene su propia guía. Estas dos son transversales, para cualquier proyecto.</p>
+    <div class="cardgrid">
+      <a class="navcard" href="primeros-pasos.html" target="_blank" rel="noopener">
+        <span class="badge">Principiantes</span>
+        <span class="role">Empieza desde cero</span>
+        <h3>Primeros Pasos</h3>
+        <p>Terminal, Node, estructura de un proyecto, qué es un <code class="inl">.env</code>, cómo proteger tus llaves, Git para no perder tu trabajo, y dónde van las skills.</p>
+        <span class="go">Abrir guía →</span>
+      </a>
+      <a class="navcard" href="avanzado.html" target="_blank" rel="noopener">
+        <span class="badge">Avanzado</span>
+        <span class="role">Para perfiles técnicos</span>
+        <h3>Conceptos Avanzados</h3>
+        <p>Internals de Orwel (incluye las personalidades con Bayes), multi-tenant con RLS y performance, y operación de IA en producción.</p>
+        <span class="go">Profundizar →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="empezar" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Tu camino</p>
+    <h2>Cómo empezar según tu nivel</h2>
+    <p class="lede">Todo equipo es mezclado. Que cada quien tome el camino que le quede, y que se ayuden entre sí.</p>
+    <div class="levels">
+      <div class="lvl">
+        <h3>Nunca he programado</h3>
+        <ol>
+          <li>Lee <a href="primeros-pasos.html" target="_blank" rel="noopener">Primeros Pasos</a> y la parte "en simple" de cada herramienta.</li>
+          <li>Aporta la idea y el diseño: ¿qué problema resuelve? ¿cómo se ve?</li>
+          <li>Prueba el sitio del equipo y anota qué confunde a un usuario nuevo.</li>
+          <li>Prepara la presentación: tú cuentas la historia.</li>
+        </ol>
+      </div>
+      <div class="lvl">
+        <h3>Sé algo de código</h3>
+        <ol>
+          <li>Abre el <a href="orwel-kit.html" target="_blank" rel="noopener">Kit de Orwel</a> y sigue el inicio rápido.</li>
+          <li>Crea tu cuenta en <a href="https://orwel.io" target="_blank" rel="noopener">orwel.io</a> y copia tu API key.</li>
+          <li>Instala una skill en tu asistente y deja que te ayude.</li>
+          <li>Construye una landing que mida visitas y capture leads.</li>
+        </ol>
+      </div>
+      <div class="lvl">
+        <h3>Programo bien</h3>
+        <ol>
+          <li>Estudia el <a href="teamup-papers.html" target="_blank" rel="noopener">Playbook de TeamUp</a> y roba los patrones.</li>
+          <li>Usa la API REST de Orwel para construir encima de los datos.</li>
+          <li>Aplica map-reduce si tu proyecto usa IA con muchos datos.</li>
+          <li>Levanta la base con los prompts de scaffolding y enfócate en lo único de tu idea.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="retos" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Inspiración</p>
+    <h2>Retos sugeridos</h2>
+    <p class="lede">¿Sin idea? Toma una de estas y hazla tuya. Filtra por tu nivel.</p>
+    <div class="filterbar" id="filterbar">
+      <button class="fbtn on" data-f="all">Todos</button>
+      <button class="fbtn" data-f="Principiante">Principiante</button>
+      <button class="fbtn" data-f="Intermedio">Intermedio</button>
+      <button class="fbtn" data-f="Avanzado">Avanzado</button>
+    </div>
+    <div class="retos" id="retos">
+      <div class="reto" data-lvl="Principiante"><h3>Captura inteligente</h3><p>Una landing que mide todo con Orwel y captura leads, y que adapta su mensaje según la personalidad del visitante.</p><span class="lvl-tag">Principiante</span></div>
+      <div class="reto" data-lvl="Intermedio"><h3>Panel sobre tus datos</h3><p>Usa la API REST de Orwel para construir un dashboard o bot que responda "¿quién es mi mejor lead hoy y por qué?".</p><span class="lvl-tag">Intermedio</span></div>
+      <div class="reto" data-lvl="Avanzado"><h3>IA bien aplicada</h3><p>Algo que use IA sobre muchos datos sin romperse: extracción + map-reduce o un mini-RAG, siguiendo el Playbook.</p><span class="lvl-tag">Avanzado</span></div>
+      <div class="reto" data-lvl="Avanzado"><h3>Producto desde cero</h3><p>Arma un SaaS multi-tenant (con login y datos aislados por equipo) usando el blueprint de TeamUp.</p><span class="lvl-tag">Avanzado</span></div>
+      <div class="reto" data-lvl="Intermedio"><h3>Experiencia que se adapta</h3><p>Un sitio que cambia contenido o CTA según los rasgos del visitante que da Orwel. Pocas líneas, mucho efecto.</p><span class="lvl-tag">Intermedio</span></div>
+      <div class="reto" data-lvl="Principiante"><h3>Tu propia idea</h3><p>Lo que se te ocurra. Las herramientas son medios; el premio es resolver algo que de verdad importe.</p><span class="lvl-tag">Principiante</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="destacar" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Consejos</p>
+    <h2>Cómo hacer que tu proyecto destaque</h2>
+    <ul class="clean">
+      <li><b>Resuelve un problema real</b> y cuéntalo claro. La historia importa tanto como el código.</li>
+      <li><b>Que un demo funcione de principio a fin</b> vale más que muchas features a medias.</li>
+      <li><b>Usa las herramientas de verdad.</b> Mostrar Orwel midiendo en vivo durante la demo impresiona.</li>
+      <li><b>Cuida el diseño</b> y que se entienda en menos de un minuto. Lo simple y limpio gana.</li>
+      <li><b>Di qué harías con más tiempo.</b> Reconocer los límites demuestra madurez de ingeniería.</li>
+      <li><b>Que todos aporten:</b> idea, diseño, código y presentación. Un equipo que se reparte bien rinde más.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="ayuda" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Soporte</p>
+    <h2>Preguntas frecuentes</h2>
+    <div class="faq">
+      <details><summary>No sé programar nada, ¿puedo participar?</summary><div class="a">Sí, y eres importante. Las mejores ideas y presentaciones vienen de quien piensa en el usuario, no solo en el código. Aporta la idea, el diseño, las pruebas y la historia final.</div></details>
+      <details><summary>¿Cuánto cuesta usar Orwel?</summary><div class="a">Para el hackathon es gratis. Entra a <a href="https://orwel.io" target="_blank" rel="noopener">orwel.io</a>, crea tu cuenta y obtienes tu propia API key al instante. Cada equipo puede tener la suya.</div></details>
+      <details><summary>¿Por qué de TeamUp no hay código para descargar?</summary><div class="a">Porque lo valioso es el cómo. Te damos la arquitectura, el design system y los prompts para que construyas tu propia versión, sin depender de nuestros servidores. Aprendes más y eres dueño de lo que haces.</div></details>
+      <details><summary>Mi proyecto usa IA y se traba con muchos datos. ¿Qué hago?</summary><div class="a">Es el problema más común. Lee "El muro de contexto" y "¿IA o algoritmo?" en el <a href="teamup-papers.html" target="_blank" rel="noopener">Playbook de TeamUp</a>: explica por qué pasa y la solución, con código listo.</div></details>
+      <details><summary>¿Qué necesito tener instalado?</summary><div class="a">Para lo básico: un navegador y, si vas a programar, Node.js y un editor (VS Code). Las skills funcionan con asistentes como Claude Code, Gemini o Cursor. Todo el setup está en <a href="primeros-pasos.html" target="_blank" rel="noopener">Primeros Pasos</a>.</div></details>
+    </div>
+    <div class="callout note" style="margin-top:26px"><p class="lbl">¿Atorado?</p><p>Busca a alguien con gafete de Hyperdigital. Estamos aquí justo para eso.</p></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><svg class="logo" style="height:20px" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg></div>
+    <p>Hackathon Hyperdigital × Google · Sábado 27 de junio de 2026</p>
+    <p class="flinks">
+      <a href="primeros-pasos.html" target="_blank" rel="noopener">Primeros Pasos</a> ·
+      <a href="orwel-kit.html" target="_blank" rel="noopener">Kit de Orwel</a> ·
+      <a href="teamup-papers.html" target="_blank" rel="noopener">Playbook de TeamUp</a> ·
+      <a href="skills-catalogo.html" target="_blank" rel="noopener">Catálogo de Skills</a> ·
+      <a href="avanzado.html" target="_blank" rel="noopener">Conceptos Avanzados</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var bar=document.getElementById('filterbar'); if(!bar) return;
+    var retos=document.querySelectorAll('#retos .reto');
+    bar.addEventListener('click',function(e){
+      var b=e.target.closest('.fbtn'); if(!b) return;
+      bar.querySelectorAll('.fbtn').forEach(function(x){x.classList.remove('on')});
+      b.classList.add('on');
+      var f=b.getAttribute('data-f');
+      retos.forEach(function(r){
+        r.classList.toggle('hide', f!=='all' && r.getAttribute('data-lvl')!==f);
+      });
+    });
+  })();
+</script>

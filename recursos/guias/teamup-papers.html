@@ -1,0 +1,625 @@
+<title>TeamUp · Playbook de Arquitectura e IA — Hyperdigital × Google</title>
+<meta name="description" content="Blueprint replicable de TeamUp y un curso práctico de IA en producción: límites de LLMs, peticiones grandes, prompts, embeddings, RAG, agentes y cuándo NO usar IA.">
+
+<style>
+  :root{
+    --ink:#1c1d28;--ink-strong:#170175;--muted:#5c5f72;--accent:#3F00FF;--accent-weak:#efeaff;
+    --line:#e9e7f3;--line-strong:#d8d4ec;--bg:#ffffff;--bg-alt:#f7f5fd;--code-bg:#0e1018;
+    --ok:#0a7d4d;--ok-bg:#eef8f2;--ok-line:#bfe6d2;--warn:#9a6300;--warn-bg:#fdf6e9;--warn-line:#f0dcad;
+    --danger:#c0392b;--danger-bg:#fdf0ee;--danger-line:#f2cdc7;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,monospace;--maxw:1040px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline;text-underline-offset:2px}
+  h1,h2,h3,h4{color:var(--ink-strong);line-height:1.25;letter-spacing:-.018em;font-weight:700}
+  p{margin:0 0 16px}
+  code{font-family:var(--mono);font-size:.875em}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:14px;height:60px;max-width:1180px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.02em;color:var(--ink-strong)}
+  .brand .logo{height:18px;width:auto;display:block}.brand .sep{color:var(--line-strong);font-weight:400}
+  .brand .doc{color:var(--muted);font-weight:600;font-size:15px}
+  nav.top .links{margin-left:auto;display:flex;gap:18px;font-size:14px;font-weight:500}
+  nav.top .links a{color:var(--muted)}nav.top .links a:hover{color:var(--ink-strong);text-decoration:none}
+  @media(max-width:880px){nav.top .links{display:none}}
+  header.hero{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#faf9fe,#fff)}
+  header.hero .wrap{padding-top:64px;padding-bottom:52px}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  header.hero h1{font-size:clamp(34px,5vw,52px);margin:0 0 18px;max-width:20ch}
+  header.hero .lead{font-size:clamp(18px,2.2vw,21px);color:var(--muted);max-width:64ch;margin:0 0 26px}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px}
+  .meta-row b{color:var(--ink-strong);font-weight:600}
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  section:nth-of-type(even){background:var(--bg-alt)}
+  section h2{font-size:clamp(25px,3vw,32px);margin:0 0 10px}
+  section .lede{color:var(--muted);font-size:18px;max-width:68ch;margin:0 0 28px}
+  .seclabel{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  h3.sub{font-size:21px;margin:34px 0 10px;scroll-margin-top:76px}
+  h4.sub{font-size:16.5px;margin:24px 0 8px;color:var(--ink-strong)}
+  .callout{border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:16px 20px;margin:20px 0;background:#fff}
+  .callout .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 5px}
+  .callout p{margin:0;color:var(--ink)}.callout p+p{margin-top:8px}
+  .callout.simple{border-left-color:var(--accent);background:var(--accent-weak)}.callout.simple .lbl{color:var(--accent)}
+  .callout.note{border-left-color:var(--accent)}.callout.note .lbl{color:var(--accent)}
+  .callout.tip{border-left-color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line)}.callout.tip .lbl{color:var(--ok)}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-bg);border-color:var(--warn-line)}.callout.warn .lbl{color:var(--warn)}
+  .codeblock{margin:18px 0;border-radius:10px;overflow:hidden;border:1px solid #20222e;background:var(--code-bg)}
+  .codeblock .bar{display:flex;align-items:center;background:#171a24;color:#9aa0b4;font-size:12.5px;padding:9px 14px;font-family:var(--mono);border-bottom:1px solid #20222e}
+  .codeblock .bar .fn{font-weight:600}
+  .codeblock .copy{margin-left:auto;background:transparent;color:#9aa0b4;border:1px solid #2c2f3d;border-radius:6px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .codeblock .copy:hover{color:#fff;border-color:#454a5e}.codeblock .copy.ok{color:#5fd9a0;border-color:#2f6b50}
+  .codeblock pre{margin:0;padding:16px;overflow-x:auto;font-size:13.5px;line-height:1.7}
+  .codeblock code{font-family:var(--mono);color:#e6e8f0;font-size:13.5px}
+  .tok-c{color:#6b7186}.tok-k{color:#b79cff}.tok-s{color:#7fdbb0}.tok-f{color:#9cc7ff}.tok-d{color:#f0a878}.tok-n{color:#f0a878}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:20px 0;background:#fff}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+  th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;background:var(--bg-alt)}
+  td code{background:var(--accent-weak);color:var(--accent);padding:2px 6px;border-radius:5px}
+  tr:last-child td{border-bottom:none}
+  ul.clean{list-style:none;padding:0;margin:18px 0;display:flex;flex-direction:column;gap:11px}
+  ul.clean li{padding-left:24px;position:relative;color:var(--ink)}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  ul.clean li b{color:var(--ink-strong)}
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:10px;margin:22px 0}
+  .toc a{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 15px;font-weight:600;font-size:14.5px;color:var(--ink-strong)}
+  .toc a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+  .toc a span{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:3px}
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+  @media(max-width:640px){.ba{grid-template-columns:1fr}}
+  .ba .col{border-radius:10px;padding:18px;border:1px solid var(--line)}
+  .ba .bad{background:var(--danger-bg);border-color:var(--danger-line)}.ba .good{background:var(--ok-bg);border-color:var(--ok-line)}
+  .ba h4{margin:0 0 10px;font-size:15px}.ba .bad h4{color:var(--danger)}.ba .good h4{color:var(--ok)}
+  .ba ul{margin:0;padding-left:18px;font-size:14px;color:var(--ink)}.ba li{margin:6px 0}
+  .swatches{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}
+  .sw{border:1px solid var(--line);border-radius:10px;overflow:hidden;width:130px}
+  .sw .chip{height:52px}.sw .meta{padding:7px 10px;font-size:12px}
+  .sw .meta b{display:block;font-size:12.5px;color:var(--ink-strong)}.sw .meta code{font-size:11px;color:var(--muted)}
+  .meter{margin:18px 0;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff}
+  .meter .row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);font-size:14.5px}
+  .meter .row:last-child{border-bottom:none}
+  .meter .lbl2{width:170px;flex:none;font-weight:600;color:var(--ink-strong)}
+  .meter .track{flex:1;height:14px;background:var(--accent-weak);border-radius:7px;overflow:hidden}
+  .meter .fill{height:100%;border-radius:7px}
+  .meter .val{width:130px;flex:none;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:13.5px;color:var(--ink-strong)}
+  .scatter{position:relative;height:230px;border:1px solid var(--line);border-radius:12px;background:var(--bg-alt);margin:18px 0;overflow:hidden}
+  .scatter .pt{position:absolute;transform:translate(-50%,-50%);font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap}
+  .scatter .grp1{color:var(--ok);border-color:var(--ok-line);background:var(--ok-bg)}
+  .scatter .grp2{color:var(--accent);border-color:var(--line-strong);background:var(--accent-weak)}
+  .scatter .grp3{color:var(--warn);border-color:var(--warn-line);background:var(--warn-bg)}
+  .diagram{border:1px solid var(--line);border-radius:12px;background:#fff;padding:20px;margin:22px 0;overflow-x:auto}
+  .diagram svg{display:block;width:100%;min-width:580px;height:auto;font-family:var(--sans)}
+  .figcap{font-size:13.5px;color:var(--muted);text-align:center;margin:10px 0 0}
+  .widget{background:#fff;border:1px solid var(--line-strong);border-radius:12px;padding:22px;margin:24px 0}
+  .widget .wlabel{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  .widget>p{color:var(--muted);font-size:15px;margin:0 0 14px}
+  .widget textarea{width:100%;border:1px solid var(--line-strong);border-radius:9px;padding:12px;font-family:var(--mono);font-size:14px;color:var(--ink);background:#fff;resize:vertical}
+  .widget textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .wbtns{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0 0}
+  .wbtn{border:1px solid var(--line-strong);background:#fff;color:var(--ink-strong);border-radius:8px;padding:8px 14px;font-weight:600;font-size:14px;cursor:pointer;font-family:var(--sans);transition:.12s}
+  .wbtn:hover{border-color:var(--accent);color:var(--accent)}.wbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .wstats{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+  .wstat{flex:1;min-width:96px;background:var(--bg-alt);border:1px solid var(--line);border-radius:9px;padding:11px 12px;text-align:center}
+  .wstat b{display:block;font-size:21px;font-variant-numeric:tabular-nums;color:var(--ink-strong);line-height:1.1}
+  .wstat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .wbar{height:16px;background:var(--accent-weak);border-radius:8px;overflow:hidden;margin:8px 0}
+  .wbar .wfill{height:100%;width:0;background:var(--ok);transition:width .25s,background .25s;border-radius:8px}
+  .wmsg{font-size:14px;margin-top:10px;font-weight:600;min-height:1.2em}
+  footer{padding:42px 0;text-align:center;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--bg-alt)}
+  footer a{color:var(--accent)}footer .brand{justify-content:center;margin-bottom:10px}
+  .anchor{scroll-margin-top:76px}
+</style>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand"><svg class="logo" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg><span class="sep">/</span><span class="doc">TeamUp Playbook</span></span>
+    <span class="links">
+      <a href="inico.html" target="_blank" rel="noopener">Hub</a>
+      <a href="#arquitectura">Arquitectura</a>
+      <a href="#ia">IA</a>
+      <a href="#prompts">Prompts</a>
+      <a href="#rag">RAG</a>
+      <a href="#template">Template</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Hackathon Hyperdigital × Google</p>
+    <h1>El playbook de TeamUp: arquitectura + IA real</h1>
+    <p class="lead">Dos cosas en un documento: el plano de cómo construimos un producto serio, y un curso práctico de inteligencia artificial en producción — explicado desde cero, simple, y listo para que lo implementes hoy.</p>
+    <div class="meta-row">
+      <span>Patrones probados en <b>producción</b></span>
+      <span>De <b>principiante</b> a <b>avanzado</b></span>
+      <span>Con diagramas y demos en vivo</span>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="que-es" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">El producto que inspira esta guía</p>
+    <h2>TeamUp, en una frase</h2>
+    <div class="callout simple">
+      <p class="lbl">En palabras simples</p>
+      <p>TeamUp es como una agenda súper inteligente para empresas que buscan empleados. Junta todas las vacantes, los candidatos y las entrevistas en un solo lugar, y usa inteligencia artificial para leer los currículums y decir quién encaja mejor.</p>
+    </div>
+    <p class="lede">Para quien construye: TeamUp es un ATS (sistema de seguimiento de candidatos) SaaS multi-tenant con React + Supabase y extracción de CVs por IA. Los patrones de abajo sirven para casi cualquier producto, no solo reclutamiento.</p>
+  </div>
+</section>
+
+<section id="arquitectura" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Parte 1 · Arquitectura</p>
+    <h2>El blueprint de un SaaS multi-tenant</h2>
+    <p class="lede">"Multi-tenant" significa que muchas empresas usan la misma app pero cada una solo ve sus propios datos. Así se comunican las piezas:</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 840 330" role="img" aria-label="Arquitectura de TeamUp: navegador, capa de servicios, Supabase y microservicios de IA">
+        <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3F00FF"/></marker></defs>
+        <!-- Navegador -->
+        <rect x="12" y="128" width="184" height="74" rx="12" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="104" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="#170175">Navegador</text>
+        <text x="104" y="181" text-anchor="middle" font-size="12" fill="#5c5f72">React · Vite · TanStack Query</text>
+        <!-- Service layer -->
+        <rect x="262" y="128" width="190" height="74" rx="12" fill="#efeaff" stroke="#3F00FF" stroke-width="1.5"/>
+        <text x="357" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="#170175">Service layer</text>
+        <text x="357" y="181" text-anchor="middle" font-size="12" fill="#5c5f72">src/lib/services/*</text>
+        <!-- Supabase -->
+        <rect x="556" y="36" width="272" height="80" rx="12" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="692" y="68" text-anchor="middle" font-size="16" font-weight="700" fill="#170175">Supabase</text>
+        <text x="692" y="89" text-anchor="middle" font-size="12" fill="#5c5f72">Postgres · Auth · RLS (workspace_id)</text>
+        <!-- IA -->
+        <rect x="556" y="214" width="272" height="80" rx="12" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="692" y="246" text-anchor="middle" font-size="16" font-weight="700" fill="#170175">Microservicios de IA</text>
+        <text x="692" y="267" text-anchor="middle" font-size="12" fill="#5c5f72">OCR · extracción · matching</text>
+        <!-- arrows -->
+        <line x1="196" y1="165" x2="258" y2="165" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="227" y="156" text-anchor="middle" font-size="11.5" fill="#5c5f72">eventos</text>
+        <line x1="452" y1="150" x2="552" y2="86" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="500" y="108" text-anchor="middle" font-size="11.5" fill="#5c5f72">queries · RLS</text>
+        <line x1="452" y1="180" x2="552" y2="244" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="500" y="226" text-anchor="middle" font-size="11.5" fill="#5c5f72">documentos / IA</text>
+      </svg>
+      <p class="figcap">Los componentes nunca hablan con la base directo: todo pasa por la capa de servicios, y la base aplica el aislamiento por <code>workspace_id</code> con RLS.</p>
+    </div>
+
+    <h3 class="sub">Las cuatro ideas que debes robarte</h3>
+    <ul class="clean">
+      <li><b>Aísla por tenant en la base.</b> Cada tabla lleva <code>workspace_id</code> + una política RLS de Postgres. Nadie ve datos de otra empresa, aunque el frontend tenga un bug. La seguridad no vive en la UI.</li>
+      <li><b>Service layer obligatorio.</b> Toda lectura/escritura pasa por <code>services/</code>. Cambiar de proveedor, cachear o loguear se hace en un solo lugar.</li>
+      <li><b>Estado del servidor ≠ estado de UI.</b> TanStack Query maneja carga, caché e invalidación. Tras una mutación, invalidas la query y la UI se actualiza sola.</li>
+      <li><b>La IA en su propia capa.</b> Extracción y scoring viven aislados en <code>ai.ts</code>: así cambias de modelo, cacheas y manejas fallos sin tocar el resto — y puedes probarlo.</li>
+    </ul>
+    <div class="codeblock"><div class="bar"><span class="fn">src/lib/services/candidatos.ts</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">export async function</span> <span class="tok-f">listCandidatos</span>(workspaceId: <span class="tok-k">string</span>) {
+  <span class="tok-k">const</span> { data, error } = <span class="tok-k">await</span> supabase
+    .<span class="tok-f">from</span>(<span class="tok-s">'candidatos'</span>)
+    .<span class="tok-f">select</span>(<span class="tok-s">'id, nombre, email, score, status'</span>)
+    .<span class="tok-f">eq</span>(<span class="tok-s">'workspace_id'</span>, workspaceId)   <span class="tok-c">// RLS lo refuerza en la BD</span>
+    .<span class="tok-f">order</span>(<span class="tok-s">'created_at'</span>, { ascending: <span class="tok-k">false</span> });
+  <span class="tok-k">if</span> (error) <span class="tok-k">throw</span> error;
+  <span class="tok-k">return</span> data;
+}</code></pre></div>
+  </div>
+</section>
+
+<section id="ia" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Parte 2 · Curso de IA en producción</p>
+    <h2>Inteligencia artificial, explicada de verdad</h2>
+    <p class="lede">La IA es la pieza más poderosa y más frágil de un producto moderno. Aquí la explicamos desde cero: cómo funciona, dónde se rompe, y los patrones para usarla bien. Cada concepto trae una analogía simple, el porqué, y cómo implementarlo.</p>
+    <div class="toc">
+      <a href="#ia-o-algoritmo">¿IA o algoritmo?<span>cuándo NO usar IA</span></a>
+      <a href="#piensa">1 · Cómo piensa un LLM<span>tokens y contexto</span></a>
+      <a href="#limites">2 · Sus límites<span>lo que debes saber</span></a>
+      <a href="#muro">3 · El muro de contexto<span>peticiones grandes</span></a>
+      <a href="#prompts">4 · Prompts<span>tu programa en palabras</span></a>
+      <a href="#embeddings">5 · Embeddings<span>significado en números</span></a>
+      <a href="#rag">6 · RAG<span>darle TUS datos</span></a>
+      <a href="#agentes">7 · Agentes<span>IA que actúa</span></a>
+    </div>
+
+    <h3 class="sub" id="ia-o-algoritmo">Antes de empezar: ¿IA o algoritmo?</h3>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>La IA está de moda, pero no todo se resuelve mejor con IA. Muchas veces un algoritmo normal —reglas, matemáticas, estadística— es más rápido, barato, exacto y explicable. La habilidad clave no es "meter IA en todo", sino saber cuándo sí y cuándo no.</p></div>
+    <p><b>La regla práctica:</b> usa IA solo cuando la tarea requiere entender <em>lenguaje, ambigüedad o contexto</em> que no puedes expresar en reglas. Si puedes escribir las reglas, escríbelas.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Tarea (ejemplos reales)</th><th>¿Qué usar?</th><th>Por qué</th></tr></thead>
+      <tbody>
+        <tr><td>Ordenar candidatos por su score</td><td><b>Algoritmo</b> (un <code>sort</code>)</td><td>Exacto y gratis. Pedírselo a un LLM es absurdo.</td></tr>
+        <tr><td>Matching de skills/experiencia — el motor de TeamUp</td><td><b>Algoritmo</b> (reglas con pesos)</td><td>Reproducible y ajustable. Así está hecho TeamUp.</td></tr>
+        <tr><td>Personalidad de un visitante — orwel-mind</td><td><b>Estadística</b> (Teorema de Bayes)</td><td>Determinista, explicable, en vivo. No es IA.</td></tr>
+        <tr><td>Leer un CV en PDF y sacar los campos</td><td><b>IA</b></td><td>Texto sin estructura: justo lo que un LLM hace bien.</td></tr>
+        <tr><td>Resumir un lead y sugerir próximos pasos</td><td><b>IA</b></td><td>Requiere juicio en lenguaje natural.</td></tr>
+        <tr><td>Buscar candidatos "parecidos a esta vacante"</td><td><b>Embeddings</b></td><td>Usa un modelo pero no genera texto: búsqueda barata.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout tip"><p class="lbl">El ejemplo estrella — orwel-mind</p><p>Orwel podría haber usado un LLM para "adivinar" la personalidad de cada visitante. En vez de eso usa el Teorema de Bayes: cada evento ajusta la probabilidad de cada rasgo, como un detective sumando evidencias. Resultado: instantáneo, gratis, explicable y reproducible — todo lo que un LLM no te daría para esta tarea.</p></div>
+    <div class="callout warn"><p class="lbl">Por qué importa</p><p>Usar IA donde sobra cuesta dinero y latencia, y mete alucinaciones justo donde necesitabas exactitud. En TeamUp, el matching es un algoritmo de pesos; la IA entra solo donde de verdad aporta (leer el CV, resumir al candidato). La IA no es el martillo para todo clavo.</p></div>
+    <div class="callout tip"><p class="lbl">Para el hackathon</p><p>Si tu proyecto usa IA, explica en la presentación por qué elegiste IA o algoritmo en cada parte. Demostrar ese criterio —y no "le metí IA a todo"— es justo lo que distingue a un equipo que entiende lo que hace.</p></div>
+
+    <h3 class="sub" id="piensa">1 · Cómo piensa un LLM</h3>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Un LLM (modelo de lenguaje grande, como el que mueve a ChatGPT o Gemini) es básicamente un autocompletado gigante. Leyó cantidades enormes de texto y aprendió un solo truco: dado un texto, adivinar qué palabra sigue, una por una. No "entiende" como tú: predice lo más probable.</p></div>
+    <ul class="clean">
+      <li><b>Token.</b> El modelo no lee letras ni palabras completas, sino <em>tokens</em>: trocitos de texto. Regla de bolsillo: ~4 caracteres ≈ 1 token. Todo se cobra y se limita en tokens.</li>
+      <li><b>Ventana de contexto.</b> Es todo lo que el modelo puede tener en mente a la vez: tu instrucción + los datos + su respuesta, en tokens. Es finita.</li>
+      <li><b>Predicción probabilística.</b> Como solo predice texto plausible, a veces inventa con seguridad ("alucina"). No consulta una verdad: completa.</li>
+    </ul>
+
+    <h3 class="sub" id="limites">2 · Los límites que debes conocer</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Límite</th><th>Qué significa</th><th>Qué haces</th></tr></thead>
+      <tbody>
+        <tr><td>Ventana finita</td><td>Hay un máximo de tokens por petición.</td><td>Mide antes de enviar. No metas "todo".</td></tr>
+        <tr><td>"Lost in the middle"</td><td>Atiende mejor el inicio y el final; el medio se diluye.</td><td>Pon lo importante al principio y al final.</td></tr>
+        <tr><td>No determinismo</td><td>La misma pregunta puede dar respuestas distintas.</td><td><code>temperature: 0</code> para tareas exactas; valida.</td></tr>
+        <tr><td>Alucinaciones</td><td>Inventa datos con seguridad.</td><td>Dale los datos (RAG), pide que cite y diga "no sé".</td></tr>
+        <tr><td>Fecha de corte</td><td>No sabe nada reciente ni tus datos privados.</td><td>RAG o herramientas para traer info fresca.</td></tr>
+        <tr><td>Costo y latencia</td><td>Pagas y esperas por token.</td><td>Sé compacto; modelos chicos para tareas simples.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 class="sub" id="muro">3 · El muro de contexto: el problema #1</h3>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Un LLM es como una persona que solo puede leer cierta cantidad de hojas a la vez. Si le pasas 5 currículums, perfecto. Si le pasas 500 de golpe, ya no le caben en las manos: se confunde, tarda muchísimo, o no responde. En TeamUp nos pasó exactamente esto: con muchos candidatos, el LLM dejaba de contestar.</p></div>
+    <p>Los números lo dejan clarísimo:</p>
+    <div class="meter">
+      <div class="row"><span class="lbl2">1 CV (~800 palabras)</span><span class="track"><span class="fill" style="width:3%;background:var(--ok)"></span></span><span class="val">~1,100 tokens</span></div>
+      <div class="row"><span class="lbl2">50 CVs</span><span class="track"><span class="fill" style="width:30%;background:var(--warn)"></span></span><span class="val">~55,000 tokens</span></div>
+      <div class="row"><span class="lbl2">500 CVs</span><span class="track"><span class="fill" style="width:100%;background:var(--danger)"></span></span><span class="val">~550,000 tokens</span></div>
+      <div class="row"><span class="lbl2">Límite típico del modelo</span><span class="track"><span class="fill" style="width:23%;background:#170175;opacity:.4"></span></span><span class="val">~128,000 tokens</span></div>
+    </div>
+    <p style="color:var(--muted);font-size:15.5px">Con 500 CVs te pasas cuatro veces del límite. La petición falla o se trunca. Y aunque cupiera, el modelo respondería peor (lost in the middle) y costaría una fortuna.</p>
+
+    <div class="widget">
+      <p class="wlabel">Pruébalo en vivo · estimador de tokens</p>
+      <p>Escribe o pega texto y mira cuántos tokens ocupa y qué tan lleno deja el contexto. Usa los botones para multiplicarlo por N documentos.</p>
+      <textarea id="tokIn" rows="4">Desarrollador Full Stack con 5 años de experiencia en React, Node y Postgres. Lideró un equipo de 4 personas en una fintech, donde construyó el sistema de pagos y mejoró el rendimiento del checkout en un 40%.</textarea>
+      <div class="wbtns">
+        <button class="wbtn on" data-mult="1">× 1</button>
+        <button class="wbtn" data-mult="50">× 50 CVs</button>
+        <button class="wbtn" data-mult="500">× 500 CVs</button>
+      </div>
+      <div class="wstats">
+        <div class="wstat"><b id="tChars">0</b><span>caracteres</span></div>
+        <div class="wstat"><b id="tWords">0</b><span>palabras</span></div>
+        <div class="wstat"><b id="tToks">0</b><span>tokens</span></div>
+        <div class="wstat"><b id="tPct">0%</b><span>de 128k</span></div>
+      </div>
+      <div class="wbar"><div class="wfill" id="tFill"></div></div>
+      <div class="wmsg" id="tMsg"></div>
+    </div>
+
+    <div class="ba">
+      <div class="col bad"><h4>El anti-patrón (lo que rompía)</h4><ul><li>Pegar los 500 CVs completos en un solo prompt.</li><li>Pedir "analiza a todos y dime el mejor" de un jalón.</li><li>Enviar el texto crudo del OCR, con todo el ruido.</li><li>Una sola llamada, sin reintentos ni límites.</li></ul></div>
+      <div class="col good"><h4>El patrón correcto</h4><ul><li>Extraer campos clave primero; enviar JSON compacto.</li><li>Evaluar candidato por candidato (map) y combinar (reduce).</li><li>Pre-filtrar y mandar solo lo relevante (RAG).</li><li>Lotes con límite, reintentos, caché y degradación.</li></ul></div>
+    </div>
+    <h4 class="sub">Las técnicas, de la más simple a la más potente</h4>
+    <ul class="clean">
+      <li><b>Presupuesto de tokens.</b> Estima antes de llamar (texto.length ÷ 4 ≈ tokens). Si te acercas al límite, recorta o parte.</li>
+      <li><b>Extraer, no pegar.</b> Un modelo barato convierte cada CV en JSON compacto. Pasas de ~1,100 a ~80 tokens por candidato.</li>
+      <li><b>Chunking.</b> Para textos largos, córtalos en trozos de 200–500 tokens con ~10% de solape, respetando párrafos.</li>
+      <li><b>Map-Reduce.</b> Procesa cada ítem por separado (map, en paralelo) y combina en código (reduce). Solo lo agregado va a un segundo prompt.</li>
+      <li><b>Lotes + concurrencia.</b> Páginas de tamaño fijo, tope de llamadas en paralelo (<code>mapLimit</code>), reintentos con backoff.</li>
+      <li><b>Caché.</b> Guarda la extracción por hash del contenido. Si no cambió, no vuelvas a pagar.</li>
+      <li><b>Degradación elegante.</b> Si una llamada falla, devuelve resultado parcial marcado, no un error total.</li>
+    </ul>
+    <div class="codeblock"><div class="bar"><span class="fn">scoreCandidatos.ts — map-reduce</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-c">// MAP: cada candidato, prompt pequeño, JSON compacto, concurrencia limitada</span>
+<span class="tok-k">const</span> scored = <span class="tok-k">await</span> <span class="tok-f">mapLimit</span>(candidatos, <span class="tok-n">5</span>, (c) =&gt;
+  <span class="tok-f">withRetry</span>(() =&gt; llm.<span class="tok-f">json</span>({
+    system: <span class="tok-s">'Devuelve {score:0-100, motivo}.'</span>,
+    input: <span class="tok-f">pickFields</span>(c, [<span class="tok-s">'skills'</span>, <span class="tok-s">'experiencia'</span>])  <span class="tok-c">// no el CV entero</span>
+  })));
+
+<span class="tok-c">// REDUCE: ordena y filtra EN CÓDIGO; solo el top 10 va al LLM final</span>
+<span class="tok-k">const</span> top = scored.<span class="tok-f">sort</span>((a, b) =&gt; b.score - a.score).<span class="tok-f">slice</span>(<span class="tok-n">0</span>, <span class="tok-n">10</span>);
+<span class="tok-k">return</span> llm.<span class="tok-f">text</span>({ system: <span class="tok-s">'Resume a los finalistas.'</span>, input: top });</code></pre></div>
+    <div class="callout tip"><p class="lbl">El truco mental</p><p>Haz que el LLM haga lo único que solo él puede hacer (entender lenguaje), y deja el resto —ordenar, filtrar, contar, paginar— en código normal, que es exacto, gratis e instantáneo.</p></div>
+  </div>
+</section>
+
+<section id="prompts" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Concepto 4</p>
+    <h2>Prompts: el programa que escribes en palabras</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Un prompt es la instrucción que le das a la IA. La idea más importante de toda esta guía: el prompt ES tu programa. No programas la IA con código, la programas con palabras. Un prompt vago da resultados vagos; uno preciso da resultados precisos.</p></div>
+    <h3 class="sub">Anatomía de un buen prompt</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Parte</th><th>Qué es</th><th>Ejemplo</th></tr></thead>
+      <tbody>
+        <tr><td><b>1. Rol</b></td><td>Quién es la IA. Fija tono y marco.</td><td><code>Eres un reclutador técnico experto.</code></td></tr>
+        <tr><td><b>2. Tarea</b></td><td>Qué quieres, verbo claro.</td><td><code>Evalúa qué tan bien encaja el candidato.</code></td></tr>
+        <tr><td><b>3. Contexto</b></td><td>Los datos necesarios, sin ruido.</td><td>La vacante + el JSON del candidato.</td></tr>
+        <tr><td><b>4. Reglas</b></td><td>Qué sí y qué no. En positivo.</td><td><code>Califica de 0 a 100. Sé estricto con la experiencia.</code></td></tr>
+        <tr><td><b>5. Formato</b></td><td>Cómo quieres la salida. JSON.</td><td><code>Responde solo con {"score","motivo"}.</code></td></tr>
+        <tr><td><b>6. Ejemplos</b></td><td>1–3 casos de entrada → salida.</td><td>Un candidato de ejemplo con su score correcto.</td></tr>
+      </tbody>
+    </table></div>
+    <h3 class="sub">Reglas de semántica: cómo "habla" la IA</h3>
+    <ul class="clean">
+      <li><b>Específico &gt; vago.</b> "Resume en 3 viñetas de máx 15 palabras" vence a "resume esto".</li>
+      <li><b>Instrucciones en positivo.</b> "Responde solo con JSON" funciona mejor que "no escribas texto extra".</li>
+      <li><b>Usa delimitadores.</b> Separa tu instrucción de los datos del usuario con marcas (<code>###</code>, triple comilla). Evita la inyección de prompt.</li>
+      <li><b>El orden importa.</b> Instrucción clave al inicio; en prompts largos, repítela al final.</li>
+      <li><b>Controla <code>temperature</code>.</b> 0 = exacto y repetible; alto = creativo.</li>
+      <li><b>Pide formato estructurado y valídalo.</b> JSON con esquema &gt; texto libre.</li>
+    </ul>
+    <div class="ba">
+      <div class="col bad"><h4>Prompt débil</h4><ul><li style="list-style:none">"Mira este candidato y dime si sirve para el puesto."</li></ul><p style="font-size:13px;color:var(--danger);margin:8px 0 0">Respuesta inconsistente, formato impredecible, sin criterio.</p></div>
+      <div class="col good"><h4>Prompt fuerte</h4><ul><li style="list-style:none">"Eres un reclutador técnico. Evalúa al candidato contra la vacante. Califica 0-100 (penaliza si falta experiencia). Responde SOLO JSON: {"score","motivo"}. Ej: {"score":82,"motivo":"Cumple skills, falta 1 año."}"</li></ul><p style="font-size:13px;color:var(--ok);margin:8px 0 0">Rol, criterio, formato y ejemplo. Resultado consistente y parseable.</p></div>
+    </div>
+    <div class="callout warn"><p class="lbl">Trátalo como código</p><p>Un prompt es parte de tu producto. Guárdalo en el repo, versiónalo, y pruébalo contra casos reales (skill <code>hyper-env</code>). Un cambio "pequeño" de palabras puede romper tu feature.</p></div>
+    <h3 class="sub">Prompts listos para copiar</h3>
+    <div class="codeblock"><div class="bar"><span class="fn">Base del SaaS multi-tenant</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>Crea la base de un SaaS multi-tenant con React 19 + Vite + TypeScript
+y Supabase. Requisitos:
+- Auth con Magic Link y un AuthProvider con hook useAuth().
+- workspaces, workspace_members (rol), y entidad {X} con workspace_id
+  en TODAS las tablas + políticas RLS que filtren por workspace_id.
+- Capa de servicios en src/lib/services/ que encapsule Supabase.
+- TanStack Query con invalidación tras mutaciones.
+Entrega: migración SQL, el AuthProvider y un servicio de ejemplo.</code></pre></div>
+    <div class="codeblock"><div class="bar"><span class="fn">Pipeline de IA que no revienta el contexto</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>Implementa un pipeline que reciba documentos largos (ej. CVs) y
+devuelva JSON estructurado, optimizado para el límite de contexto:
+- Extraer campos con un modelo barato -> JSON compacto.
+- Procesar N items con map-reduce y mapLimit(concurrencia 5).
+- Reintentos con backoff y degradación parcial.
+- Cachear extracciones por hash del documento.
+Aísla todo en src/lib/services/ai.ts detrás de una interfaz mockeable.</code></pre></div>
+  </div>
+</section>
+
+<section id="embeddings" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Concepto 5</p>
+    <h2>Embeddings: convertir el significado en números</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Imagina un mapa enorme donde cada idea es un punto. Las palabras con significado parecido quedan juntas; las distintas, lejos. Un embedding es convertir un texto en una lista de números (un "vector") que es su coordenada en ese mapa de significados.</p></div>
+    <div class="scatter" aria-hidden="true">
+      <span class="pt grp1" style="left:22%;top:30%">perro</span>
+      <span class="pt grp1" style="left:33%;top:54%">cachorro</span>
+      <span class="pt grp1" style="left:17%;top:66%">gato</span>
+      <span class="pt grp2" style="left:70%;top:28%">contratar</span>
+      <span class="pt grp2" style="left:83%;top:50%">reclutar</span>
+      <span class="pt grp2" style="left:66%;top:64%">vacante</span>
+      <span class="pt grp3" style="left:45%;top:84%">factura</span>
+      <span class="pt grp3" style="left:58%;top:90%">pago</span>
+    </div>
+    <p class="figcap">Significados parecidos caen cerca. Eso permite buscar por idea, no por palabra exacta.</p>
+    <ul class="clean">
+      <li><b>Cómo se mide la cercanía:</b> con la <em>similitud coseno</em>, un número de 0 a 1. Cerca de 1 = significan casi lo mismo.</li>
+      <li><b>Cómo se usa:</b> generas el embedding de cada texto, lo guardas en una base vectorial (<code>pgvector</code>), y ante una consulta traes los K vectores más cercanos.</li>
+      <li><b>Para qué sirve:</b> búsqueda semántica, recomendaciones, deduplicar, clasificar — y es el cimiento de RAG.</li>
+    </ul>
+    <div class="callout note"><p class="lbl">En TeamUp</p><p>Gracias a los embeddings, buscar "frontend senior" encuentra a alguien cuyo CV dice "desarrollador React con 5 años", aunque no compartan ni una palabra. Eso es buscar por significado, no por texto.</p></div>
+    <div class="codeblock"><div class="bar"><span class="fn">Búsqueda semántica con pgvector</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-c">// 1) Al guardar: convierte el texto en vector y almacénalo</span>
+<span class="tok-k">const</span> vector = <span class="tok-k">await</span> embed(<span class="tok-s">'Desarrollador React con 5 años'</span>);
+<span class="tok-k">await</span> db.<span class="tok-f">insert</span>(<span class="tok-s">'docs'</span>, { texto, embedding: vector });
+
+<span class="tok-c">// 2) Al buscar: vectoriza la consulta y trae los más cercanos</span>
+<span class="tok-k">const</span> q = <span class="tok-k">await</span> embed(<span class="tok-s">'frontend senior'</span>);
+<span class="tok-k">const</span> r = <span class="tok-k">await</span> db.<span class="tok-f">query</span>(
+  <span class="tok-s">`SELECT texto FROM docs ORDER BY embedding &lt;=&gt; $1 LIMIT 5`</span>, [q]);</code></pre></div>
+  </div>
+</section>
+
+<section id="rag" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Concepto 6</p>
+    <h2>RAG: darle a la IA tus datos sin reventar el contexto</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>La IA no conoce tus datos privados y no le caben todos a la vez. RAG (Generación Aumentada por Recuperación) resuelve las dos cosas: en vez de mandarle todo, primero buscas los pedacitos relevantes y solo esos se los das con la pregunta. Es como un examen a libro abierto: no memorizas el libro, buscas la página correcta justo antes de responder.</p></div>
+    <div class="diagram">
+      <svg viewBox="0 0 860 150" role="img" aria-label="Flujo RAG: ingesta, indexar, recuperar, generar">
+        <defs><marker id="ah2" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3F00FF"/></marker></defs>
+        <rect x="8" y="45" width="180" height="60" rx="11" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="98" y="72" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">1 · Ingesta</text>
+        <text x="98" y="91" text-anchor="middle" font-size="11.5" fill="#5c5f72">chunking</text>
+        <rect x="226" y="45" width="180" height="60" rx="11" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="316" y="72" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">2 · Indexar</text>
+        <text x="316" y="91" text-anchor="middle" font-size="11.5" fill="#5c5f72">embeddings → BD vectorial</text>
+        <rect x="444" y="45" width="180" height="60" rx="11" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="534" y="72" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">3 · Recuperar</text>
+        <text x="534" y="91" text-anchor="middle" font-size="11.5" fill="#5c5f72">top-K relevante</text>
+        <rect x="662" y="45" width="190" height="60" rx="11" fill="#efeaff" stroke="#3F00FF" stroke-width="1.5"/>
+        <text x="757" y="72" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">4 · Generar</text>
+        <text x="757" y="91" text-anchor="middle" font-size="11.5" fill="#5c5f72">LLM responde + cita</text>
+        <line x1="188" y1="75" x2="222" y2="75" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="406" y1="75" x2="440" y2="75" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="624" y1="75" x2="658" y2="75" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah2)"/>
+      </svg>
+      <p class="figcap">Solo los trozos relevantes (paso 3) llegan al LLM. Nunca mandas la base entera.</p>
+    </div>
+    <div class="callout note"><p class="lbl">En TeamUp</p><p>RAG te deja preguntarle a tu base de CVs en lenguaje natural — "¿qué candidatos tienen experiencia en logística y hablan inglés?" — y que la IA recupere los CVs relevantes y responda citándolos, sin meter cientos de CVs completos en el prompt.</p></div>
+    <h3 class="sub">¿RAG, fine-tuning, o solo prompt?</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Opción</th><th>Cuándo</th></tr></thead>
+      <tbody>
+        <tr><td><b>Solo prompt</b></td><td>Los datos son pocos y caben en el contexto. Lo más simple — empieza aquí.</td></tr>
+        <tr><td><b>RAG</b></td><td>Datos privados, grandes o que cambian seguido. Default para "responder sobre mis documentos".</td></tr>
+        <tr><td><b>Fine-tuning</b></td><td>Para enseñar un estilo o formato — no para meter conocimiento nuevo (mito común). Rara vez necesario en un hackathon.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout warn"><p class="lbl">Errores típicos de RAG</p><p>Trozos mal cortados, índice desactualizado, o traer trozos irrelevantes. Si las respuestas salen mal, casi siempre el problema está en el paso 3 (qué tan bueno es lo que recuperas), no en el modelo.</p></div>
+  </div>
+</section>
+
+<section id="agentes" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Concepto 7</p>
+    <h2>Agentes: IA que actúa, con correa</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Hasta ahora la IA solo responde texto. Un agente es una IA puesta en un bucle y con herramientas que puede usar para hacer cosas: buscar en la web, leer una base, mandar un correo, llamar una API. Le das un objetivo y ella decide qué herramienta usar, mira el resultado, y sigue hasta terminar.</p></div>
+    <div class="ba">
+      <div class="col" style="background:#fff;border-color:var(--line)"><h4 style="color:var(--ink-strong)">Workflow (empieza aquí)</h4><ul><li>Tú defines los pasos (código determinista).</li><li>Predecible, barato, fácil de depurar.</li><li>El 90% de los casos se resuelven así (ej. el map-reduce de arriba).</li></ul></div>
+      <div class="col" style="background:#fff;border-color:var(--line)"><h4 style="color:var(--ink-strong)">Agente (solo si hace falta)</h4><ul><li>El modelo decide los pasos en el momento.</li><li>Flexible, pero impredecible, caro y difícil de depurar.</li><li>Úsalo solo cuando el camino no se puede saber de antemano.</li></ul></div>
+    </div>
+    <div class="callout note"><p class="lbl">En TeamUp</p><p>El scoring de candidatos es un workflow determinista (extraer → map-reduce → ordenar), y está bien así. La versión agente sería: dada una vacante, que la IA decida sola buscar candidatos, evaluarlos, redactar correos y agendar entrevistas — más flexible, pero impredecible y caro.</p></div>
+    <h3 class="sub">Las tres piezas de un agente</h3>
+    <ul class="clean">
+      <li><b>Herramientas (tools).</b> Las funciones que puede llamar. Pocas, con una descripción clarísima de cuándo usar cada una — esa descripción también es un prompt.</li>
+      <li><b>Bucle de razonamiento.</b> Pensar → elegir herramienta → ver el resultado → repetir, hasta lograr el objetivo o tocar un límite.</li>
+      <li><b>Memoria.</b> Lo que lleva acumulado. Cuidado: crece y choca con el límite de contexto (otra vez el muro).</li>
+    </ul>
+    <h3 class="sub">Reglas para no quemarte</h3>
+    <ul class="clean">
+      <li><b>Límites de pasos y de costo</b> por corrida. Un agente sin freno puede entrar en un loop infinito y en una factura infinita.</li>
+      <li><b>Valida la salida del modelo</b> (con un esquema) antes de ejecutar cualquier acción real.</li>
+      <li><b>Permisos mínimos.</b> Las acciones destructivas (borrar, pagar, enviar) piden confirmación.</li>
+      <li><b>Empieza determinista,</b> añade autonomía solo donde aporte.</li>
+    </ul>
+    <div class="codeblock"><div class="bar"><span class="fn">El bucle de un agente, en esencia</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">let</span> pasos = <span class="tok-n">0</span>;
+<span class="tok-k">while</span> (!terminado &amp;&amp; pasos++ &lt; <span class="tok-n">8</span>) {          <span class="tok-c">// 1) límite de pasos</span>
+  <span class="tok-k">const</span> decision = <span class="tok-k">await</span> llm.<span class="tok-f">decide</span>(objetivo, herramientas, memoria);
+  <span class="tok-k">if</span> (!<span class="tok-f">esValida</span>(decision)) <span class="tok-k">break</span>;              <span class="tok-c">// 2) valida antes de actuar</span>
+  <span class="tok-k">const</span> r = <span class="tok-k">await</span> <span class="tok-f">ejecutar</span>(decision.tool, decision.args);
+  memoria.<span class="tok-f">push</span>({ decision, r });               <span class="tok-c">// 3) recuerda</span>
+  terminado = decision.tool === <span class="tok-s">'finalizar'</span>;
+}</code></pre></div>
+    <div class="callout tip"><p class="lbl">Para profundizar</p><p>Instala la skill <code>hyper-llm</code> del pack del hackathon: cubre RAG, agentes y manejo de contexto con ejemplos.</p></div>
+  </div>
+</section>
+
+<section id="design" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Parte 3 · Recursos · Design system</p>
+    <h2>Tokens que puedes copiar y pegar</h2>
+    <p class="lede">Un producto se ve consistente porque usa tokens: colores y tamaños con nombre, no valores sueltos. Estos son los de TeamUp.</p>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#00008b"></div><div class="meta"><b>team-navy</b><code>#00008b</code></div></div>
+      <div class="sw"><div class="chip" style="background:#00add9"></div><div class="meta"><b>team-cyan</b><code>#00add9</code></div></div>
+      <div class="sw"><div class="chip" style="background:#111111"></div><div class="meta"><b>team-black</b><code>#111111</code></div></div>
+      <div class="sw"><div class="chip" style="background:#F5F6F7;border-bottom:1px solid var(--line)"></div><div class="meta"><b>team-gray</b><code>#F5F6F7</code></div></div>
+      <div class="sw"><div class="chip" style="background:#E9F7EF"></div><div class="meta"><b>green</b><code>#E9F7EF</code></div></div>
+      <div class="sw"><div class="chip" style="background:#FFE8E3"></div><div class="meta"><b>coral</b><code>#FFE8E3</code></div></div>
+    </div>
+    <div class="codeblock"><div class="bar"><span class="fn">tailwind.config.js</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>colors: {
+  <span class="tok-f">'team-navy'</span>: <span class="tok-s">'#00008b'</span>,  <span class="tok-f">'team-cyan'</span>: <span class="tok-s">'#00add9'</span>,
+  <span class="tok-f">'team-black'</span>: <span class="tok-s">'#111111'</span>, <span class="tok-f">'team-gray'</span>: <span class="tok-s">'#F5F6F7'</span>,
+}
+<span class="tok-c">// Tipografía: Inter. Escala: 48/32/24/18/14/13/12/11px</span>
+<span class="tok-c">// Tablas densas: filas 44px, header 40px, fuente 13px.</span></code></pre></div>
+
+    <h3 class="sub">Responsive: mobile-first de verdad</h3>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>"Mobile-first" significa diseñar primero para la pantalla más pequeña y luego ir agregando espacio para las grandes — no al revés. Es más fácil agrandar un diseño simple que apretar uno complejo.</p></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Prefijo</th><th>Desde</th><th>Pensado para</th></tr></thead>
+      <tbody>
+        <tr><td><code>(base)</code></td><td>0px</td><td>Móvil. El estilo por defecto.</td></tr>
+        <tr><td><code>sm:</code></td><td>640px</td><td>Móvil grande / horizontal.</td></tr>
+        <tr><td><code>md:</code></td><td>768px</td><td>Tablet.</td></tr>
+        <tr><td><code>lg:</code></td><td>1024px</td><td>Laptop. Aquí aparece el sidebar.</td></tr>
+        <tr><td><code>xl:</code></td><td>1280px</td><td>Escritorio amplio.</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="clean">
+      <li><b>Sidebar → drawer.</b> En escritorio, navegación lateral fija de 240px; en móvil se esconde en un cajón.</li>
+      <li><b>Tabla densa → scroll o tarjetas.</b> Scroll horizontal con la primera columna fija, o cada fila como tarjeta apilada.</li>
+      <li><b>Áreas táctiles ≥ 44px.</b> El dedo no es preciso como el mouse.</li>
+      <li><b>Escala de espaciado base 4px:</b> 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 96. Nunca un <code>13px</code> inventado.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="datos" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Recursos · Modelo de datos</p>
+    <h2>El esquema, en una pantalla</h2>
+    <p class="lede">El núcleo de TeamUp. Todo cuelga de <code>workspaces</code>: esa es la columna vertebral del multi-tenant.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Grupo</th><th>Tablas principales</th></tr></thead>
+      <tbody>
+        <tr><td><b>Tenant &amp; Auth</b></td><td><code>profiles</code> · <code>workspaces</code> · <code>workspace_members</code></td></tr>
+        <tr><td><b>Vacantes</b></td><td><code>vacantes</code> · <code>job_hard_skills</code> · <code>job_soft_skills</code> · <code>job_languages</code></td></tr>
+        <tr><td><b>Candidatos</b></td><td><code>candidatos</code> · <code>cvs</code> · <code>experiences</code> · <code>candidate_hard_skills</code></td></tr>
+        <tr><td><b>Flujo</b></td><td><code>pipeline_stages</code> · <code>candidato_pipeline</code> · <code>entrevistas</code></td></tr>
+        <tr><td><b>Comunicación</b></td><td><code>email_templates</code> · <code>email_messages</code> · <code>notificaciones</code></td></tr>
+        <tr><td><b>Negocio</b></td><td><code>subscriptions</code> · <code>facturas</code> · <code>configuracion_workspace</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout note"><p class="lbl">Regla de oro multi-tenant</p><p>Si una tabla guarda datos de un cliente, necesita <code>workspace_id</code> + una política RLS. Sin excepción.</p></div>
+  </div>
+</section>
+
+<section id="template" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Recursos · Template</p>
+    <h2>TeamUp MVP: un mini-repo que puedes copiar</h2>
+    <p class="lede">Todo lo de esta guía, hecho código. Un proyecto pequeño, funcional y comentado que aplica estos patrones para que lo uses como punto de partida — copia lo que sirva, borra lo que no.</p>
+    <div class="callout simple"><p class="lbl">Qué trae</p><p>Estructura de proyecto comentada · esquema SQL con RLS multi-tenant · service layer · y la capa de IA real: extracción de CV, scoring con <b>map-reduce</b>, reintentos, degradación elegante y un cliente LLM <b>mockeable</b> (corre sin gastar tokens).</p></div>
+    <div class="tree" style="background:var(--code-bg);color:#e6e8f0;border-radius:10px;padding:18px;font-family:var(--mono);font-size:13px;line-height:1.85;overflow-x:auto;white-space:pre;border:1px solid #20222e;margin:18px 0"><span style="color:#f0a878;font-weight:700">teamup-mvp/</span>
+├── README.md                  <span style="color:#6b7186"># explica todo, en orden</span>
+├── .env.example               <span style="color:#6b7186"># qué llaves necesitas</span>
+├── supabase/migrations/
+│   └── 0001_init.sql          <span style="color:#6b7186"># esquema + RLS multi-tenant</span>
+└── src/
+    ├── lib/
+    │   ├── ai/                <span style="color:#6b7186"># LA capa de IA (lo más valioso)</span>
+    │   │   ├── llm.ts         <span style="color:#6b7186"># cliente mockeable</span>
+    │   │   ├── extract.ts     <span style="color:#6b7186"># CV crudo -> JSON compacto</span>
+    │   │   └── score.ts       <span style="color:#6b7186"># map-reduce sobre N candidatos</span>
+    │   └── services/          <span style="color:#6b7186"># toda la lógica de datos</span>
+    ├── providers/             <span style="color:#6b7186"># Auth + React Query</span>
+    └── components/            <span style="color:#6b7186"># tabla densa estilo ATS</span></div>
+    <div class="codeblock"><div class="bar"><span class="fn">Correrlo</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>npm install
+cp .env.example .env     <span class="tok-c"># rellena tus llaves (o déjalo en modo mock)</span>
+npm run dev              <span class="tok-c"># http://localhost:5173</span></code></pre></div>
+    <div class="callout tip"><p class="lbl">Para el hackathon</p><p>La IA arranca en <b>modo mock</b>: funciona sin API key ni gastar tokens, así arrancas en segundos. Cuando conectes tu proveedor (Gemini, Claude…), cambia <code>VITE_AI_MODE=real</code> en una sola línea. El template se entrega en la carpeta de recursos del evento.</p></div>
+    <div class="callout note"><p class="lbl">Demo interactivo en vivo</p><p>Antes de leer el código, juega con el <a href="teamup-demo.html" target="_blank" rel="noopener"><b>Demo Interactivo de TeamUp</b></a>: un ATS completo y simulado (carga masiva, análisis de CV, taxonomía, scoring, bolsa de trabajo, postulaciones y atribución) donde cada sección se explica en pantalla, como un cómic.</p></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><svg class="logo" style="height:20px" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg></div>
+    <p>TeamUp Playbook · Hackathon Hyperdigital × Google · 27 de junio de 2026</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var code=btn.closest('.codeblock').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(function(){
+        var t=btn.textContent;btn.textContent='Copiado';btn.classList.add('ok');
+        setTimeout(function(){btn.textContent=t;btn.classList.remove('ok');},1500);
+      });
+    });
+  });
+  (function(){
+    var inp=document.getElementById('tokIn'); if(!inp) return;
+    var mult=1, LIMIT=128000;
+    function fmt(n){return n.toLocaleString('en-US');}
+    function calc(){
+      var t=inp.value, chars=t.length, words=t.trim()?t.trim().split(/\s+/).length:0;
+      var toks=Math.ceil(chars/4)*mult;
+      document.getElementById('tChars').textContent=fmt(chars*mult);
+      document.getElementById('tWords').textContent=fmt(words*mult);
+      document.getElementById('tToks').textContent=fmt(toks);
+      var ratio=toks/LIMIT, pct=Math.min(100,ratio*100);
+      document.getElementById('tPct').textContent=(ratio*100<10?(ratio*100).toFixed(1):Math.round(ratio*100))+'%';
+      var fill=document.getElementById('tFill'); fill.style.width=pct+'%';
+      var msg=document.getElementById('tMsg');
+      if(toks>LIMIT){fill.style.background='#c0392b';msg.style.color='#c0392b';msg.textContent='Te pasaste del límite ('+(Math.round(ratio*10)/10)+'×). La petición fallaría o se truncaría — aplica extracción + map-reduce.';}
+      else if(ratio>0.6){fill.style.background='#9a6300';msg.style.color='#9a6300';msg.textContent='Te acercas al límite. Empieza a compactar (extraer campos, no pegar texto crudo).';}
+      else{fill.style.background='#0a7d4d';msg.style.color='#0a7d4d';msg.textContent='Cabe sin problema.';}
+    }
+    inp.addEventListener('input',calc);
+    document.querySelectorAll('[data-mult]').forEach(function(b){b.addEventListener('click',function(){
+      mult=+b.getAttribute('data-mult');
+      document.querySelectorAll('[data-mult]').forEach(function(x){x.classList.remove('on')});
+      b.classList.add('on'); calc();
+    });});
+    calc();
+  })();
+</script>

@@ -1,0 +1,498 @@
+<title>Conceptos Avanzados — Hackathon Hyperdigital × Google</title>
+<meta name="description" content="Profundidad para perfiles técnicos: internals de Orwel, multi-tenancy a escala, economía de la IA (con calculadora), resiliencia, evals, spec-driven development y decisiones de arquitectura.">
+
+<style>
+  :root{
+    --ink:#1c1d28;--ink-strong:#170175;--muted:#5c5f72;--accent:#3F00FF;--accent-weak:#efeaff;
+    --line:#e9e7f3;--line-strong:#d8d4ec;--bg:#ffffff;--bg-alt:#f7f5fd;--code-bg:#0e1018;
+    --ok:#0a7d4d;--ok-bg:#eef8f2;--ok-line:#bfe6d2;--warn:#9a6300;--warn-bg:#fdf6e9;--warn-line:#f0dcad;
+    --danger:#c0392b;--danger-bg:#fdf0ee;--danger-line:#f2cdc7;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,monospace;--maxw:1040px;
+  }
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline;text-underline-offset:2px}
+  h1,h2,h3,h4{color:var(--ink-strong);line-height:1.25;letter-spacing:-.018em;font-weight:700}
+  p{margin:0 0 16px}code{font-family:var(--mono);font-size:.875em}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:14px;height:60px;max-width:1180px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.02em;color:var(--ink-strong)}
+  .brand .logo{height:18px;width:auto;display:block}.brand .sep{color:var(--line-strong);font-weight:400}
+  .brand .doc{color:var(--muted);font-weight:600;font-size:15px}
+  nav.top .links{margin-left:auto;display:flex;gap:16px;font-size:14px;font-weight:500}
+  nav.top .links a{color:var(--muted)}nav.top .links a:hover{color:var(--ink-strong);text-decoration:none}
+  @media(max-width:920px){nav.top .links{display:none}}
+  header.hero{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#faf9fe,#fff)}
+  header.hero .wrap{padding-top:64px;padding-bottom:52px}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  header.hero h1{font-size:clamp(34px,5vw,52px);margin:0 0 18px;max-width:18ch}
+  header.hero .lead{font-size:clamp(18px,2.2vw,21px);color:var(--muted);max-width:66ch;margin:0 0 26px}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px}
+  .meta-row b{color:var(--ink-strong);font-weight:600}
+  section{padding:52px 0;border-bottom:1px solid var(--line)}
+  section:nth-of-type(even){background:var(--bg-alt)}
+  section h2{font-size:clamp(25px,3vw,32px);margin:0 0 10px}
+  section .lede{color:var(--muted);font-size:18px;max-width:70ch;margin:0 0 26px}
+  .seclabel{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  h3.sub{font-size:21px;margin:34px 0 10px}h4.sub{font-size:16.5px;margin:24px 0 8px;color:var(--ink-strong)}
+  .callout{border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:16px 20px;margin:20px 0;background:#fff}
+  .callout .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 5px}
+  .callout p{margin:0;color:var(--ink)}.callout p+p{margin-top:8px}
+  .callout.simple{border-left-color:var(--accent);background:var(--accent-weak)}.callout.simple .lbl{color:var(--accent)}
+  .callout.note{border-left-color:var(--accent)}.callout.note .lbl{color:var(--accent)}
+  .callout.tip{border-left-color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line)}.callout.tip .lbl{color:var(--ok)}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-bg);border-color:var(--warn-line)}.callout.warn .lbl{color:var(--warn)}
+  .callout.war{border-left-color:#9a6300;background:#fffaf0;border-color:#f0dcad}
+  .callout.war .lbl{color:#9a6300}
+  .codeblock{margin:18px 0;border-radius:10px;overflow:hidden;border:1px solid #20222e;background:var(--code-bg)}
+  .codeblock .bar{display:flex;align-items:center;background:#171a24;color:#9aa0b4;font-size:12.5px;padding:9px 14px;font-family:var(--mono);border-bottom:1px solid #20222e}
+  .codeblock .bar .fn{font-weight:600}
+  .codeblock .copy{margin-left:auto;background:transparent;color:#9aa0b4;border:1px solid #2c2f3d;border-radius:6px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .codeblock .copy:hover{color:#fff;border-color:#454a5e}.codeblock .copy.ok{color:#5fd9a0;border-color:#2f6b50}
+  .codeblock pre{margin:0;padding:16px;overflow-x:auto;font-size:13px;line-height:1.7}
+  .codeblock code{font-family:var(--mono);color:#e6e8f0;font-size:13px}
+  .tok-c{color:#6b7186}.tok-k{color:#b79cff}.tok-s{color:#7fdbb0}.tok-f{color:#9cc7ff}.tok-d{color:#f0a878}.tok-n{color:#f0a878}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:20px 0;background:#fff}
+  table{border-collapse:collapse;width:100%;min-width:580px;font-size:14.5px}
+  th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;background:var(--bg-alt)}
+  td code{background:var(--accent-weak);color:var(--accent);padding:2px 6px;border-radius:5px}
+  tr:last-child td{border-bottom:none}
+  ul.clean{list-style:none;padding:0;margin:18px 0;display:flex;flex-direction:column;gap:11px}
+  ul.clean li{padding-left:24px;position:relative;color:var(--ink)}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  ul.clean li b{color:var(--ink-strong)}
+  ol.flow{counter-reset:s;list-style:none;padding:0;margin:20px 0}
+  ol.flow>li{position:relative;padding:0 0 20px 48px;counter-increment:s}
+  ol.flow>li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--accent-weak);color:var(--accent);border:1px solid var(--accent);display:grid;place-items:center;font-weight:700;font-size:14px}
+  ol.flow>li::after{content:"";position:absolute;left:14.5px;top:30px;bottom:0;width:1px;background:var(--line)}
+  ol.flow>li:last-child::after{display:none}ol.flow>li:last-child{padding-bottom:0}ol.flow b{color:var(--ink-strong)}
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:22px 0}
+  .toc a{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-weight:600;font-size:15px;color:var(--ink-strong)}
+  .toc a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+  .toc a span{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:3px}
+  .diagram{border:1px solid var(--line);border-radius:12px;background:#fff;padding:20px;margin:22px 0;overflow-x:auto}
+  .diagram svg{display:block;width:100%;min-width:600px;height:auto;font-family:var(--sans)}
+  .figcap{font-size:13.5px;color:var(--muted);text-align:center;margin:10px 0 0}
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+  @media(max-width:640px){.ba{grid-template-columns:1fr}}
+  .ba .col{border-radius:10px;padding:18px;border:1px solid var(--line)}
+  .ba .bad{background:var(--danger-bg);border-color:var(--danger-line)}.ba .good{background:var(--ok-bg);border-color:var(--ok-line)}
+  .ba h4{margin:0 0 10px;font-size:15px}.ba .bad h4{color:var(--danger)}.ba .good h4{color:var(--ok)}
+  .ba code{font-size:12.5px}.ba .big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:8px}
+  .ba .bad .big{color:var(--danger)}.ba .good .big{color:var(--ok)}
+  /* widgets */
+  .widget{background:#fff;border:1px solid var(--line-strong);border-radius:12px;padding:22px;margin:24px 0}
+  .widget .wlabel{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  .widget>p{color:var(--muted);font-size:15px;margin:0 0 16px}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:16px 22px;margin-bottom:8px}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:block;font-size:13px;font-weight:600;color:var(--ink-strong);margin-bottom:6px;display:flex;justify-content:space-between}
+  .ctrl label b{color:var(--accent);font-variant-numeric:tabular-nums}
+  .ctrl input[type=range]{width:100%;accent-color:var(--accent)}
+  .ctrl select{width:100%;border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;font-size:14px;font-family:var(--sans)}
+  .toggles{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 4px}
+  .tg{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink);background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+  .tg input{accent-color:var(--accent)}
+  .calcout{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:18px}
+  @media(max-width:560px){.calcout{grid-template-columns:1fr}}
+  .co{border:1px solid var(--line);border-radius:10px;padding:14px 16px;text-align:center}
+  .co .k{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+  .co .v{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:5px;color:var(--ink-strong)}
+  .co.naive .v{color:var(--danger)}.co.opt .v{color:var(--ok)}.co.save{background:var(--accent-weak);border-color:var(--accent)}.co.save .v{color:var(--accent)}
+  .trait{margin:13px 0}
+  .trait .tl{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:5px;color:var(--ink-strong)}
+  .trait .tl span{color:var(--muted);font-variant-numeric:tabular-nums}
+  .trait .tb{height:14px;background:var(--accent-weak);border-radius:7px;overflow:hidden}
+  .trait .tf{height:100%;width:30%;background:var(--accent);border-radius:7px;transition:width .4s}
+  .wbtns{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 4px}
+  .wbtn{border:1px solid var(--line-strong);background:#fff;color:var(--ink-strong);border-radius:8px;padding:8px 14px;font-weight:600;font-size:14px;cursor:pointer;font-family:var(--sans);transition:.12s}
+  .wbtn:hover{border-color:var(--accent);color:var(--accent)}.wbtn.alt{color:var(--muted)}
+  .retrybox{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;min-height:40px}
+  .attempt{font-family:var(--mono);font-size:12.5px;padding:7px 11px;border-radius:8px;border:1px solid var(--line);background:#fff;opacity:0;transform:translateY(4px);transition:.3s}
+  .attempt.show{opacity:1;transform:none}
+  .attempt.fail{border-color:var(--danger-line);background:var(--danger-bg);color:var(--danger)}
+  .attempt.ok{border-color:var(--ok-line);background:var(--ok-bg);color:var(--ok)}
+  footer{padding:42px 0;text-align:center;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--bg-alt)}
+  footer a{color:var(--accent)}footer .brand{justify-content:center;margin-bottom:10px}
+  .anchor{scroll-margin-top:76px}
+</style>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand"><svg class="logo" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg><span class="sep">/</span><span class="doc">Avanzado</span></span>
+    <span class="links">
+      <a href="inico.html" target="_blank" rel="noopener">Hub</a>
+      <a href="#orwel">Internals</a>
+      <a href="#tenant">Escala</a>
+      <a href="#economia">Economía IA</a>
+      <a href="#resiliencia">Resiliencia</a>
+      <a href="#spec">Spec-driven</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Hackathon Hyperdigital × Google · Nivel avanzado</p>
+    <h1>Lo que separa un demo de un producto</h1>
+    <p class="lead">Profundidad para quien ya programa. No "qué es la IA", sino cómo se opera en producción: economía, resiliencia, multi-tenancy a escala, calidad medible y las decisiones de arquitectura que importan. Con ejemplos numéricos y herramientas que puedes usar.</p>
+    <div class="meta-row"><span>Internals reales de Orwel</span><span>Calculadora de costos interactiva</span><span>Trade-offs, no recetas</span></div>
+  </div>
+</header>
+
+<main>
+<section class="anchor" id="indice">
+  <div class="wrap">
+    <div class="toc">
+      <a href="#orwel">1 · Orwel internals<span>ingesta, leads, personalidades</span></a>
+      <a href="#tenant">2 · Multi-tenancy a escala<span>RLS, N+1, índices, pooling</span></a>
+      <a href="#economia">3 · La economía de la IA<span>costos, ruteo · calculadora</span></a>
+      <a href="#resiliencia">4 · Resiliencia<span>reintentos, backoff, idempotencia</span></a>
+      <a href="#calidad">5 · Calidad medible<span>evals, guardrails, observabilidad</span></a>
+      <a href="#spec">6 · Spec-driven dev<span>specs, versiones, sin alucinar</span></a>
+      <a href="#decisiones">7 · Decisiones de arquitectura<span>IA vs algoritmo, build vs buy</span></a>
+    </div>
+  </div>
+</section>
+
+<section id="orwel" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">1 · Orwel internals</p>
+    <h2>Qué pasa realmente bajo el capó</h2>
+    <p class="lede">Orwel parece "una línea para trackear", pero detrás hay un pipeline pensado para no perder datos ni degradar la app del cliente. Conocerlo te ayuda a construir mejor sobre él.</p>
+
+    <h3 class="sub">El flujo de ingesta, de extremo a extremo</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 880 150" role="img" aria-label="Flujo de ingesta de Orwel">
+        <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3F00FF"/></marker></defs>
+        <rect x="8" y="44" width="186" height="62" rx="11" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="101" y="71" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">Tu app + SDK</text>
+        <text x="101" y="90" text-anchor="middle" font-size="11.5" fill="#5c5f72">track · identify · conversion</text>
+        <rect x="234" y="44" width="160" height="62" rx="11" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="314" y="71" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">Cola local</text>
+        <text x="314" y="90" text-anchor="middle" font-size="11.5" fill="#5c5f72">localStorage · offline</text>
+        <rect x="434" y="44" width="180" height="62" rx="11" fill="#efeaff" stroke="#3F00FF" stroke-width="1.5"/>
+        <text x="524" y="71" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">API api.orwel.io</text>
+        <text x="524" y="90" text-anchor="middle" font-size="11.5" fill="#5c5f72">/ingest/batch</text>
+        <rect x="654" y="44" width="218" height="62" rx="11" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="763" y="71" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">Panel orwel.io</text>
+        <text x="763" y="90" text-anchor="middle" font-size="11.5" fill="#5c5f72">leads · IA · personalidades</text>
+        <line x1="194" y1="75" x2="230" y2="75" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah)"/>
+        <line x1="394" y1="75" x2="430" y2="75" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="412" y="66" text-anchor="middle" font-size="10.5" fill="#5c5f72">batch</text>
+        <line x1="614" y1="75" x2="650" y2="75" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah)"/>
+        <line x1="650" y1="124" x2="200" y2="124" stroke="#9aa0b4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+        <text x="430" y="118" text-anchor="middle" font-size="10.5" fill="#5c5f72">API REST de lectura (tu dashboard / bot)</text>
+      </svg>
+      <p class="figcap">Los eventos se encolan localmente y se envían por lotes; si el batch falla, hay reintento individual y flush al cerrar la página.</p>
+    </div>
+    <ul class="clean">
+      <li><b>Resolución de visitante.</b> ID estable derivado del fingerprint (UUID v5 determinista), persistido en <code>localStorage</code>. Reconoce al visitante entre sesiones sin login.</li>
+      <li><b>Cola resiliente.</b> Eventos en <code>localStorage</code> (máx ~1000). Batch a <code>/ingest/batch</code> (máx 100); fallback individual; auto-flush en <code>beforeunload</code>.</li>
+      <li><b>Pipeline de lead.</b> conversion → traits → enriquecimiento de empresa (Lusha) → upsert con dedup → integraciones (webhook/Brevo) → resumen IA → notificación.</li>
+    </ul>
+
+    <h3 class="sub">Personalidades (orwel-mind): estadística, no IA</h3>
+    <p>Orwel infiere 12 rasgos de cada visitante con el <b>Teorema de Bayes</b>, no con un LLM. Cada evento es evidencia que actualiza la probabilidad de cada rasgo — como un detective. Pruébalo:</p>
+    <div class="widget">
+      <p class="wlabel">Simulador · personalidad bayesiana</p>
+      <p>Pulsa acciones del visitante y observa cómo se actualizan los rasgos en vivo. Determinista, gratis, explicable.</p>
+      <div class="wbtns">
+        <button class="wbtn" data-ev="precios">Vio precios</button>
+        <button class="wbtn" data-ev="docs">Leyó la documentación</button>
+        <button class="wbtn" data-ev="blog">Leyó el blog</button>
+        <button class="wbtn" data-ev="demo">Pidió una demo</button>
+        <button class="wbtn alt" id="bReset">reiniciar</button>
+      </div>
+      <div id="bTraits" style="margin-top:16px"></div>
+    </div>
+    <div class="callout note"><p class="lbl">Por qué Bayes y no un LLM aquí</p><p>Determinista (mismo input → mismo output), explicable (puedes auditar cada actualización), instantáneo y gratis. Un LLM sería caro, lento, no reproducible y podría alucinar un rasgo. Es el caso de libro de "no todo es IA".</p></div>
+  </div>
+</section>
+
+<section id="tenant" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">2 · Multi-tenancy a escala</p>
+    <h2>RLS seguro… y rápido</h2>
+    <p class="lede">El aislamiento por tenant es fácil de implementar inseguro o lento. Estos son los detalles que solo importan cuando creces.</p>
+
+    <h3 class="sub">RLS con el claim en el JWT</h3>
+    <div class="codeblock"><div class="bar"><span class="fn">policy + índice compuesto</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">alter table</span> items <span class="tok-k">enable row level security</span>;
+
+<span class="tok-k">create policy</span> <span class="tok-s">"items: solo mi workspace"</span> <span class="tok-k">on</span> items
+  <span class="tok-k">for all using</span> (workspace_id = (auth.jwt() <span class="tok-k">-&gt;&gt;</span> <span class="tok-s">'workspace_id'</span>)::uuid);
+
+<span class="tok-c">-- El filtro de tenant va PRIMERO en el índice compuesto.</span>
+<span class="tok-k">create index on</span> items (workspace_id, created_at <span class="tok-k">desc</span>);</code></pre></div>
+
+    <h3 class="sub">El error #1 a escala: N+1 queries</h3>
+    <p>Listar 50 candidatos y, por cada uno, pedir su vacante = <b>51 consultas</b>. A pocos datos no se nota; con tráfico real, tu base muere.</p>
+    <div class="ba">
+      <div class="col bad"><h4>✗ N+1 (51 viajes a la BD)</h4><pre style="margin:0;background:none;color:#7a2b22;font-family:var(--mono);font-size:12px;overflow-x:auto">const cs = await getCandidatos()
+for (const c of cs) {
+  c.vacante =
+    await getVacante(c.vacante_id) // ✗
+}</pre><div class="big">~510 ms</div></div>
+      <div class="col good"><h4>✓ Un join / select anidado</h4><pre style="margin:0;background:none;color:#0a5c3a;font-family:var(--mono);font-size:12px;overflow-x:auto">const cs = await supabase
+  .from('candidatos')
+  .select('*, vacante:vacantes(*)')
+  // 1 sola consulta ✓</pre><div class="big">~12 ms</div></div>
+    </div>
+    <div class="callout warn"><p class="lbl">Cómo detectarlo</p><p>Si ves un <code>await</code> dentro de un <code>for</code>/<code>map</code> que pega a la base o a una API, es casi seguro un N+1. Resuélvelo con un join, un <code>in (...)</code>, o <code>DataLoader</code> para agrupar.</p></div>
+
+    <ul class="clean">
+      <li><b>Agrega en SQL, no en JS.</b> No traigas 100k filas para sumarlas en memoria: <code>count()</code>, <code>sum()</code>, <code>group by</code> en la base. Ahorras memoria y red.</li>
+      <li><b>Connection pooling.</b> Serverless abre una conexión por invocación → agotas Postgres. Usa un pooler (PgBouncer / Supabase pooler) en modo transacción.</li>
+      <li><b>Paginación con cursor, no offset.</b> <code>OFFSET 100000</code> hace que la base recorra 100k filas. Pagina por <code>created_at &lt; ?</code> (keyset).</li>
+      <li><b>Streaming + caché en proceso.</b> Pinta skeletons al instante; un cache con TTL evita que N peticiones idénticas choquen contra un statement timeout (ver skill <code>svelte-loading</code>).</li>
+    </ul>
+  </div>
+</section>
+
+<section id="economia" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">3 · La economía de la IA</p>
+    <h2>La factura es una decisión de arquitectura</h2>
+    <p class="lede">Un feature de IA que funciona en el demo puede ser inviable a escala por costo. La diferencia entre una arquitectura ingenua y una optimizada suele ser de <b>10× a 50×</b>. Cámbialo en vivo:</p>
+
+    <div class="widget">
+      <p class="wlabel">Calculadora de costos de IA</p>
+      <p>Estima el costo mensual de procesar documentos (ej. CVs) con IA, y cuánto ahorras aplicando los patrones del Playbook. Precios ilustrativos por millón de tokens.</p>
+      <div class="controls">
+        <div class="ctrl"><label>Documentos / mes <b id="lDocs">5,000</b></label><input type="range" id="iDocs" min="100" max="100000" step="100" value="5000"></div>
+        <div class="ctrl"><label>Tokens por documento <b id="lTok">1,100</b></label><input type="range" id="iTok" min="200" max="4000" step="100" value="1100"></div>
+        <div class="ctrl"><label>% de documentos repetidos (cacheables) <b id="lCache">40%</b></label><input type="range" id="iCache" min="0" max="90" step="5" value="40"></div>
+        <div class="ctrl"><label>Modelo para razonar</label>
+          <select id="iModel"><option value="3">Grande (potente) — $3 / 1M</option><option value="1">Mediano — $1 / 1M</option></select>
+        </div>
+      </div>
+      <div class="toggles">
+        <label class="tg"><input type="checkbox" id="tExtract" checked> Extraer a JSON compacto (~80 tok)</label>
+        <label class="tg"><input type="checkbox" id="tRoute" checked> Extraer con modelo barato ($0.15/1M)</label>
+        <label class="tg"><input type="checkbox" id="tCache" checked> Cachear por hash</label>
+      </div>
+      <div class="calcout">
+        <div class="co naive"><div class="k">Ingenuo (pegar todo)</div><div class="v" id="oNaive">$0</div></div>
+        <div class="co opt"><div class="k">Optimizado</div><div class="v" id="oOpt">$0</div></div>
+        <div class="co save"><div class="k">Ahorro</div><div class="v" id="oSave">0×</div></div>
+      </div>
+      <p class="muted" id="calcNote" style="font-size:13px;margin:14px 0 0"></p>
+    </div>
+    <div class="callout tip"><p class="lbl">La intuición</p><p>El ahorro no viene de un truco, sino de tres decisiones combinadas: <b>no mandes texto crudo</b> (extrae), <b>no uses el modelo caro para todo</b> (rutea), y <b>no recalcules lo que no cambió</b> (cachea). El mismo resultado, una fracción del costo.</p></div>
+
+    <h3 class="sub">Matriz de ruteo: qué modelo para qué tarea</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Tarea</th><th>Modelo</th><th>Por qué</th></tr></thead>
+      <tbody>
+        <tr><td>Extraer campos, clasificar, formatear, traducir</td><td><b>Pequeño / barato</b></td><td>Mecánico y verificable. Un modelo chico acierta y cuesta ~20×menos.</td></tr>
+        <tr><td>Razonar, sintetizar, decidir, redactar fino</td><td><b>Grande / potente</b></td><td>Solo donde la calidad del juicio mueve el resultado.</td></tr>
+        <tr><td>Buscar por significado</td><td><b>Embeddings</b></td><td>No genera texto: mucho más barato. Cachea los vectores.</td></tr>
+        <tr><td>Validar/clasificar con reglas claras</td><td><b>Código, sin IA</b></td><td>Si puedes escribir la regla, es exacta y gratis.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="resiliencia" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">4 · Resiliencia</p>
+    <h2>Las APIs fallan. Tu producto no debería.</h2>
+    <p class="lede">Proveedores de IA y bases de datos fallan de forma transitoria (rate limits, timeouts, 503). Un producto serio lo absorbe sin que el usuario se entere.</p>
+
+    <div class="widget">
+      <p class="wlabel">Visualizador · reintentos con backoff exponencial</p>
+      <p>Simula una llamada inestable. Mira cómo el reintento con espera creciente la rescata, en vez de tirar un error a la primera.</p>
+      <div class="wbtns">
+        <button class="wbtn" id="bRetry">Simular llamada inestable</button>
+        <button class="wbtn alt" id="bRetryReset">limpiar</button>
+      </div>
+      <div class="retrybox" id="retryBox"></div>
+    </div>
+
+    <div class="codeblock"><div class="bar"><span class="fn">backoff exponencial + degradación</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">async function</span> <span class="tok-f">withRetry</span>(fn, retries = <span class="tok-n">2</span>, base = <span class="tok-n">300</span>) {
+  <span class="tok-k">for</span> (<span class="tok-k">let</span> i = <span class="tok-n">0</span>; i &lt;= retries; i++) {
+    <span class="tok-k">try</span> { <span class="tok-k">return await</span> <span class="tok-f">fn</span>(); }
+    <span class="tok-k">catch</span> (e) {
+      <span class="tok-k">if</span> (i === retries) <span class="tok-k">throw</span> e;        <span class="tok-c">// se acabaron los intentos</span>
+      <span class="tok-k">await</span> <span class="tok-f">sleep</span>(base * <span class="tok-n">2</span> ** i);          <span class="tok-c">// 300ms, 600ms, 1200ms…</span>
+    }
+  }
+}</code></pre></div>
+
+    <ul class="clean">
+      <li><b>Backoff exponencial + jitter.</b> Si todos reintentan al mismo tiempo, vuelves a tumbar al proveedor (thundering herd). Suma un margen aleatorio.</li>
+      <li><b>Idempotencia.</b> Si reintentas un POST que crea algo, podrías duplicar. Manda una <code>Idempotency-Key</code> y dedup en el servidor (Orwel deduplica conversiones por clave compuesta justo por esto).</li>
+      <li><b>Circuit breaker.</b> Si un servicio lleva N fallos seguidos, deja de llamarlo un rato (falla rápido) en vez de acumular timeouts que ahogan tu app.</li>
+      <li><b>Degradación elegante.</b> ¿Falló el scoring de 3 de 200 candidatos? Devuelve los 197 marcando los 3. Un 98% útil supera a un error total.</li>
+      <li><b>Timeouts en todo.</b> Una llamada sin timeout puede colgar un worker indefinidamente. Pon un tope y trátalo como fallo.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="calidad" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">5 · Calidad medible</p>
+    <h2>Si no lo mides, no sabes si tu IA mejora o empeora</h2>
+    <p class="lede">"Se ve bien" no es una métrica. Tratar la IA como software serio significa observarla y evaluarla con datos.</p>
+    <h3 class="sub">Observabilidad</h3>
+    <ul class="clean">
+      <li><b>Loguea cada llamada:</b> prompt, modelo, tokens (in/out), latencia, costo y resultado. Sin esto, depurar IA es a ciegas y la factura es una sorpresa.</li>
+      <li><b>Traza el flujo completo</b> (request_id) cuando una operación encadena varias llamadas (extraer → puntuar → resumir).</li>
+    </ul>
+    <h3 class="sub">Evals: tu red de seguridad ante cambios</h3>
+    <p>Un cambio "pequeño" de prompt o de modelo puede romper tu feature en silencio. Un <b>dataset dorado</b> (entradas + salida esperada) te avisa.</p>
+    <ol class="flow">
+      <li><b>Reúne 20–50 casos reales</b> con su respuesta correcta. Versiónalos en el repo (<code>evals/dataset.jsonl</code>).</li>
+      <li><b>Corre el modelo</b> contra el dataset al cambiar prompt/modelo (no en cada commit: cuesta).</li>
+      <li><b>Mide:</b> % correcto, % de formato válido (JSON parseable), costo y latencia por caso.</li>
+      <li><b>Compara versiones.</b> ¿El prompt nuevo subió el acierto del 82% al 91% sin subir el costo? Adelante. ¿Lo bajó? Revierte.</li>
+    </ol>
+    <h3 class="sub">Guardrails</h3>
+    <ul class="clean">
+      <li><b>Valida el esquema</b> de toda salida estructurada antes de actuar. Si no cumple, reintenta o degrada — nunca ejecutes sobre JSON inválido.</li>
+      <li><b>Inyección de prompt:</b> separa instrucciones de datos del usuario con delimitadores; nunca dejes que contenido externo redefina el system prompt.</li>
+      <li><b>Aterriza la respuesta (grounding):</b> en RAG, exige citar las fuentes recuperadas y permitir "no sé" en vez de inventar.</li>
+    </ul>
+    <div class="callout tip"><p class="lbl">Para el hackathon</p><p>No montes evals completos en un fin de semana — pero ten 5 casos a mano y córrelos antes de la demo. Si tu IA falla justo frente al jurado, esos 5 minutos de prueba te habrían salvado.</p></div>
+  </div>
+</section>
+
+<section id="spec" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">6 · Spec-Driven Development</p>
+    <h2>Cómo lograr que la IA no alucine (y dé resultados replicables)</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Antes de que la IA escriba código, escribes una breve <em>especificación</em>: qué cambia y por qué. La IA —y tú— trabajan contra ese contrato. Es el plano antes de construir: evita que el modelo improvise.</p></div>
+    <p class="lede">Pedirle a un asistente "hazme la feature X" sin contexto es la receta para que invente archivos y dé un resultado distinto cada vez. El desarrollo guiado por especificaciones lo soluciona; la herramienta de referencia es <a href="https://openspec.dev/" target="_blank" rel="noopener">OpenSpec</a>, y TeamUp la usa.</p>
+    <div class="ba">
+      <div class="col bad"><h4>✗ "Vibe coding" sin spec</h4><ul style="margin:0;padding-left:18px;font-size:14px"><li>El modelo adivina y alucina archivos.</li><li>Cada corrida da algo distinto.</li><li>Nadie sabe por qué se hizo así.</li></ul></div>
+      <div class="col good"><h4>✓ Con spec</h4><ul style="margin:0;padding-left:18px;font-size:14px"><li>Contexto explícito → menos alucinación.</li><li>Proceso repetible y revisable.</li><li>La decisión queda documentada.</li></ul></div>
+    </div>
+    <div class="codeblock"><div class="bar"><span class="fn">estructura de un cambio (estilo OpenSpec)</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>openspec/changes/agregar-login-magic-link/
+├── proposal.md   <span class="tok-c"># por qué + qué (el contrato que le das a la IA)</span>
+├── tasks.md      <span class="tok-c"># checklist de implementación</span>
+└── spec/         <span class="tok-c"># deltas: ADDED / MODIFIED / REMOVED</span></code></pre></div>
+    <div class="callout tip"><p class="lbl">Versión ligera para el hackathon</p><p>Aunque no instales OpenSpec, aplica la idea: antes de pedir que implemente algo, escríbele 5 líneas — <b>objetivo</b>, <b>archivos a tocar</b>, <b>qué NO tocar</b>, <b>criterios de aceptación</b>. Pégalas como contexto. La calidad sube muchísimo, con cualquier asistente (Claude, Gemini, Cursor…).</p></div>
+  </div>
+</section>
+
+<section id="decisiones" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">7 · Decisiones de arquitectura</p>
+    <h2>Las preguntas que de verdad mueven la aguja</h2>
+    <h3 class="sub">¿IA o algoritmo?</h3>
+    <p>La regla: usa IA solo cuando la tarea requiere entender <b>lenguaje, ambigüedad o contexto</b> que no puedes expresar en reglas. Si puedes escribir la regla, escríbela — es exacta, gratis e instantánea. (El motor de matching de TeamUp es algoritmo; orwel-mind es Bayes; la IA entra solo a leer CVs y resumir.)</p>
+    <h3 class="sub">¿Build o buy?</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Pregúntate</th><th>Inclínate por…</th></tr></thead>
+      <tbody>
+        <tr><td>¿Es tu diferenciador (el corazón de tu producto)?</td><td><b>Build</b> — no terceries tu ventaja.</td></tr>
+        <tr><td>¿Es infra resuelta (auth, pagos, analítica, email)?</td><td><b>Buy</b> — Supabase, Stripe, Orwel, Resend. No reinventes.</td></tr>
+        <tr><td>¿Lo necesitas para el lunes?</td><td><b>Buy</b> ahora, evalúa build después.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout war"><p class="lbl">Lección de TeamUp</p><p>Intentamos resolver el scoring de muchos candidatos con una sola llamada gigante a la IA. Reventaba el contexto y dejaba de responder. La solución no fue un modelo más grande, fue <b>mejor arquitectura</b>: extraer + map-reduce + caché. Casi siempre el cuello de botella es el diseño, no el modelo.</p></div>
+    <h3 class="sub">¿Cuándo optimizar?</h3>
+    <p>No antes de tiempo. En un hackathon, <b>que funcione de punta a punta</b> vence a que escale a un millón de usuarios. Pero <b>conoce</b> dónde están los límites (esta página) y dilo en tu presentación: demuestra criterio de ingeniería, y eso es justo lo que evalúa un jurado técnico.</p>
+    <div class="callout tip"><p class="lbl">Profundiza con las skills</p><p>Instala <code>hyper-llm</code> (IA en producción), <code>hyper-core</code> (backend) y <code>hyper-env</code> (testear IA) del pack del hackathon para llevar estos patrones a tu proyecto.</p></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><svg class="logo" style="height:20px" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg></div>
+    <p>Conceptos Avanzados · Hackathon Hyperdigital × Google · 27 de junio de 2026</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var code=btn.closest('.codeblock').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(function(){
+        var t=btn.textContent;btn.textContent='Copiado';btn.classList.add('ok');
+        setTimeout(function(){btn.textContent=t;btn.classList.remove('ok');},1500);
+      });
+    });
+  });
+
+  // ---- Personalidades (Bayes) ----
+  (function(){
+    var box=document.getElementById('bTraits'); if(!box) return;
+    var PRIOR={'Analítico':.3,'Comprador':.3,'Técnico':.3,'Explorador':.3};
+    var traits=Object.assign({},PRIOR);
+    var FX={precios:{Comprador:1.1,'Analítico':.4},docs:{'Técnico':1.3,'Analítico':.5},blog:{Explorador:1.0,'Analítico':.2},demo:{Comprador:1.5,'Técnico':.3}};
+    function render(){box.innerHTML='';Object.keys(traits).forEach(function(k){var p=Math.round(traits[k]*100);var d=document.createElement('div');d.className='trait';d.innerHTML='<div class="tl"><span>'+k+'</span><span>'+p+'%</span></div><div class="tb"><div class="tf" style="width:'+p+'%"></div></div>';box.appendChild(d);});}
+    function bump(ev){var e=FX[ev];if(!e)return;Object.keys(e).forEach(function(k){var lo=Math.log(traits[k]/(1-traits[k]))+e[k];traits[k]=1/(1+Math.exp(-lo));});render();}
+    document.querySelectorAll('[data-ev]').forEach(function(b){b.addEventListener('click',function(){bump(b.getAttribute('data-ev'));});});
+    document.getElementById('bReset').addEventListener('click',function(){traits=Object.assign({},PRIOR);render();});
+    render();
+  })();
+
+  // ---- Calculadora de costos de IA ----
+  (function(){
+    var iDocs=document.getElementById('iDocs'),iTok=document.getElementById('iTok'),iCache=document.getElementById('iCache'),iModel=document.getElementById('iModel');
+    var tExtract=document.getElementById('tExtract'),tRoute=document.getElementById('tRoute'),tCache=document.getElementById('tCache');
+    if(!iDocs) return;
+    var SMALL=0.15, COMPACT=80; // $/1M tokens del modelo barato, tokens del JSON compacto
+    function money(v){ if(v>=1000) return '$'+(v/1000).toFixed(1)+'k'; if(v>=10) return '$'+v.toFixed(0); return '$'+v.toFixed(2); }
+    function calc(){
+      var docs=+iDocs.value, tok=+iTok.value, cachePct=(+iCache.value)/100, big=+iModel.value;
+      document.getElementById('lDocs').textContent=docs.toLocaleString('en-US');
+      document.getElementById('lTok').textContent=tok.toLocaleString('en-US');
+      document.getElementById('lCache').textContent=(+iCache.value)+'%';
+      // Ingenuo: manda el doc completo al modelo grande, cada vez (sin caché).
+      var naive=docs*tok*big/1e6;
+      // Optimizado:
+      var extractModel=tRoute.checked?SMALL:big;
+      var effDocs=tCache.checked?docs*(1-cachePct):docs;       // caché evita recomputar repetidos
+      var extractCost=tExtract.checked?effDocs*tok*extractModel/1e6:0;
+      var reasonTokens=tExtract.checked?COMPACT:tok;            // razonas sobre compacto o sobre crudo
+      var reasonCost=effDocs*reasonTokens*big/1e6;
+      var opt=extractCost+reasonCost;
+      document.getElementById('oNaive').textContent=money(naive);
+      document.getElementById('oOpt').textContent=money(opt);
+      var save=opt>0?naive/opt:0;
+      document.getElementById('oSave').textContent=(save>=1?save.toFixed(save>=10?0:1):'1')+'×';
+      var note=[];
+      if(tExtract.checked) note.push('extraes a ~'+COMPACT+' tok');
+      if(tRoute.checked) note.push('extracción con modelo barato');
+      if(tCache.checked) note.push((+iCache.value)+'% evitado por caché');
+      document.getElementById('calcNote').textContent = note.length
+        ? 'Optimización activa: '+note.join(' · ')+'. Ahorras '+money(naive-opt)+'/mes.'
+        : 'Sin optimizaciones: estás pagando el caso ingenuo. Activa las casillas para ver el ahorro.';
+    }
+    [iDocs,iTok,iCache,iModel,tExtract,tRoute,tCache].forEach(function(el){el.addEventListener('input',calc);});
+    calc();
+  })();
+
+  // ---- Visualizador de reintentos ----
+  (function(){
+    var box=document.getElementById('retryBox'),btn=document.getElementById('bRetry'),rst=document.getElementById('bRetryReset');
+    if(!btn) return;
+    function add(txt,cls,delay){
+      return new Promise(function(res){ setTimeout(function(){
+        var d=document.createElement('div'); d.className='attempt '+cls; d.textContent=txt; box.appendChild(d);
+        requestAnimationFrame(function(){d.classList.add('show');}); res();
+      },delay); });
+    }
+    btn.addEventListener('click',async function(){
+      btn.disabled=true; box.innerHTML='';
+      await add('intento 1 → 503 Service Unavailable','fail',0);
+      await add('espera 300ms (backoff)','',500);
+      await add('intento 2 → 429 Rate Limit','fail',500);
+      await add('espera 600ms (backoff)','',500);
+      await add('intento 3 → 200 OK ✓','ok',500);
+      await add('el usuario nunca vio el error','ok',400);
+      btn.disabled=false;
+    });
+    rst.addEventListener('click',function(){box.innerHTML='';});
+  })();
+</script>

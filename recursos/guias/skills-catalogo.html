@@ -1,0 +1,275 @@
+<title>Catálogo de Skills — Hackathon Hyperdigital × Google</title>
+<meta name="description" content="Qué es una skill, cómo funciona, y el detalle de cada skill de Hyperdigital: por qué se creó, qué resuelve y cuándo se activa.">
+
+<style>
+  :root{
+    --ink:#1c1d28;--ink-strong:#170175;--muted:#5c5f72;--accent:#3F00FF;--accent-weak:#efeaff;
+    --line:#e9e7f3;--line-strong:#d8d4ec;--bg:#ffffff;--bg-alt:#f7f5fd;--code-bg:#0e1018;
+    --ok:#0a7d4d;--ok-bg:#eef8f2;--ok-line:#bfe6d2;--warn:#9a6300;--warn-bg:#fdf6e9;--warn-line:#f0dcad;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,monospace;--maxw:1040px;
+  }
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline;text-underline-offset:2px}
+  h1,h2,h3,h4{color:var(--ink-strong);line-height:1.25;letter-spacing:-.018em;font-weight:700}
+  p{margin:0 0 16px}code{font-family:var(--mono);font-size:.875em}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:14px;height:60px;max-width:1180px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.02em;color:var(--ink-strong)}
+  .brand .logo{height:18px;width:auto;display:block}.brand .sep{color:var(--line-strong);font-weight:400}
+  .brand .doc{color:var(--muted);font-weight:600;font-size:15px}
+  nav.top .links{margin-left:auto;display:flex;gap:18px;font-size:14px;font-weight:500}
+  nav.top .links a{color:var(--muted)}nav.top .links a:hover{color:var(--ink-strong);text-decoration:none}
+  @media(max-width:720px){nav.top .links{display:none}}
+  header.hero{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#faf9fe,#fff)}
+  header.hero .wrap{padding-top:64px;padding-bottom:50px}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  header.hero h1{font-size:clamp(34px,5vw,52px);margin:0 0 18px;max-width:18ch}
+  header.hero .lead{font-size:clamp(18px,2.2vw,21px);color:var(--muted);max-width:62ch;margin:0}
+  section{padding:50px 0;border-bottom:1px solid var(--line)}
+  section:nth-of-type(even){background:var(--bg-alt)}
+  section h2{font-size:clamp(24px,3vw,31px);margin:0 0 10px}
+  .seclabel{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  section .lede{color:var(--muted);font-size:18px;max-width:66ch;margin:0 0 24px}
+  h3.sub{font-size:19px;margin:28px 0 8px}
+  .callout{border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:16px 20px;margin:20px 0;background:#fff}
+  .callout .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 5px}
+  .callout p{margin:0;color:var(--ink)}
+  .callout.simple{border-left-color:var(--accent);background:var(--accent-weak)}.callout.simple .lbl{color:var(--accent)}
+  .callout.note{border-left-color:var(--accent)}.callout.note .lbl{color:var(--accent)}
+  .callout.tip{border-left-color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line)}.callout.tip .lbl{color:var(--ok)}
+  .codeblock{margin:18px 0;border-radius:10px;overflow:hidden;border:1px solid #20222e;background:var(--code-bg)}
+  .codeblock .bar{display:flex;align-items:center;background:#171a24;color:#9aa0b4;font-size:12.5px;padding:9px 14px;font-family:var(--mono);border-bottom:1px solid #20222e}
+  .codeblock .bar .fn{font-weight:600}
+  .codeblock .copy{margin-left:auto;background:transparent;color:#9aa0b4;border:1px solid #2c2f3d;border-radius:6px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .codeblock .copy:hover{color:#fff;border-color:#454a5e}.codeblock .copy.ok{color:#5fd9a0;border-color:#2f6b50}
+  .codeblock pre{margin:0;padding:16px;overflow-x:auto;font-size:13.5px;line-height:1.7}
+  .codeblock code{font-family:var(--mono);color:#e6e8f0;font-size:13.5px}
+  .tok-c{color:#6b7186}.tok-k{color:#b79cff}.tok-s{color:#7fdbb0}.tok-f{color:#9cc7ff}.tok-d{color:#f0a878}
+  ul.clean{list-style:none;padding:0;margin:14px 0;display:flex;flex-direction:column;gap:9px}
+  ul.clean li{padding-left:24px;position:relative;color:var(--ink)}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  ul.clean li b{color:var(--ink-strong)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}
+  .chips a{display:inline-flex;align-items:center;background:#fff;border:1px solid var(--line-strong);border-radius:999px;padding:7px 14px;font-weight:600;font-size:13.5px;color:var(--ink-strong);font-family:var(--mono)}
+  .chips a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+  .skill{border:1px solid var(--line);border-radius:12px;background:#fff;padding:22px 24px;margin:16px 0;scroll-margin-top:76px}
+  .skill .head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .skill h3{margin:0;font-size:20px;font-family:var(--mono);letter-spacing:-.01em}
+  .skill .est{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:6px;background:var(--ok-bg);color:var(--ok)}
+  .skill .tagline{color:var(--muted);font-size:15px;margin:0 0 6px}
+  .skill .row{display:grid;grid-template-columns:135px 1fr;gap:14px;padding:13px 0;border-top:1px solid var(--line);align-items:start}
+  @media(max-width:600px){.skill .row{grid-template-columns:1fr;gap:3px}}
+  .skill .row .k{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);padding-top:2px}
+  .skill .row .v{font-size:15.5px;color:var(--ink)}
+  .skill .row .v code{background:var(--accent-weak);color:var(--accent);padding:2px 6px;border-radius:5px;font-size:13px}
+  .widget{background:#fff;border:1px solid var(--line-strong);border-radius:12px;padding:22px;margin:24px 0}
+  .widget .wlabel{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  .widget>p{color:var(--muted);font-size:15px;margin:0 0 12px}
+  .widget input[type=text]{width:100%;border:1px solid var(--line-strong);border-radius:9px;padding:12px;font-size:15px;color:var(--ink);background:#fff}
+  .widget input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .skres{margin-top:14px}
+  .skres .hit{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:13px 16px;background:var(--bg-alt);margin-bottom:8px}
+  .skres .hit b{font-family:var(--mono);color:var(--ink-strong)}
+  .skres .hit span{color:var(--muted);font-size:14.5px}
+  .skres .none{color:var(--muted);font-size:14.5px}
+  footer{padding:42px 0;text-align:center;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--bg-alt)}
+  footer a{color:var(--accent)}footer .brand{justify-content:center;margin-bottom:10px}
+  .anchor{scroll-margin-top:76px}
+</style>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand"><svg class="logo" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg><span class="sep">/</span><span class="doc">Catálogo de Skills</span></span>
+    <span class="links">
+      <a href="inico.html" target="_blank" rel="noopener">Hub</a>
+      <a href="#que-es">Qué es</a>
+      <a href="#buscador">Buscador</a>
+      <a href="#catalogo">Catálogo</a>
+      <a href="#crear">Crea la tuya</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Hackathon Hyperdigital × Google</p>
+    <h1>El arsenal de skills de Hyperdigital</h1>
+    <p class="lead">Cada skill es un poder que le instalas a tu asistente de IA. Aquí está qué son, cómo funcionan, y el detalle de cada una: por qué la creamos, qué problema resuelve y cuándo se activa.</p>
+  </div>
+</header>
+
+<main>
+<section id="que-es" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">El concepto</p>
+    <h2>¿Qué es una skill, exactamente?</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Imagina que contratas un ayudante muy inteligente pero nuevo. Una skill es el manual que le das para una tarea específica: "así instalamos Orwel", "así escribimos documentación". Una vez que tiene el manual, lo hace bien y a nuestra manera, sin que se lo expliques cada vez.</p></div>
+    <p class="lede">Técnicamente: una skill es una carpeta con un archivo <code>SKILL.md</code>. Arriba lleva un frontmatter con un <code>name</code> y una <code>description</code>; abajo, las instrucciones. El asistente (Claude Code, Gemini, Cursor…) lee la <code>description</code> de todas tus skills y activa sola la que corresponde a tu tarea.</p>
+    <div class="codeblock"><div class="bar"><span class="fn">skills/mi-skill/SKILL.md</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-c">---</span>
+<span class="tok-d">name</span>: mi-skill
+<span class="tok-d">description</span>: Qué hace y CUÁNDO usarla. Esta línea decide
+  si el asistente la activa — escríbela con palabras clave.
+<span class="tok-c">---</span>
+
+<span class="tok-f"># Título</span>
+Las instrucciones, paso a paso, en lenguaje claro.
+Reglas, ejemplos de código, checklists.</code></pre></div>
+    <ul class="clean">
+      <li>La <code>description</code> es lo más importante: es lo que el asistente usa para decidir cuándo activarla.</li>
+      <li>No la "ejecutas" tú; se dispara cuando tu petición coincide con su propósito.</li>
+      <li>Una skill es portable: la copias entre proyectos y funciona igual.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="buscador" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Interactivo</p>
+    <h2>¿Qué skill necesito?</h2>
+    <p class="lede">Describe lo que quieres hacer y te decimos cuál se activaría.</p>
+    <div class="widget">
+      <p class="wlabel">Buscador de skills</p>
+      <p>Escribe tu tarea en tus palabras. Ejemplos: <em>"quiero medir visitas"</em>, <em>"documentar mi proyecto"</em>, <em>"mi IA se traba con muchos datos"</em>.</p>
+      <input type="text" id="skMatch" placeholder="¿qué quieres hacer?" autocomplete="off">
+      <div class="skres" id="skRes"></div>
+    </div>
+  </div>
+</section>
+
+<section id="catalogo" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">8 skills listas para usar</p>
+    <h2>El catálogo, a detalle</h2>
+    <div class="chips">
+      <a href="#orwel">orwel</a><a href="#hyper-llm">hyper-llm</a><a href="#hyper-core">hyper-core</a><a href="#hyper-sdk">hyper-sdk</a><a href="#hyper-doc">hyper-doc</a><a href="#hyper-papers">hyper-papers</a><a href="#hyper-env">hyper-env</a><a href="#svelte-loading">svelte-loading</a>
+    </div>
+
+    <div class="skill anchor" id="orwel">
+      <div class="head"><h3>orwel</h3><span class="est">Producción</span></div>
+      <p class="tagline">Instala e integra el SDK de analítica Orwel en cualquier framework.</p>
+      <div class="row"><div class="k">Por qué existe</div><div class="v">Instalar Orwel a mano se repite en cada proyecto y es fácil equivocarse: poner la llave en el lugar incorrecto, inicializar en el servidor, o filtrar el secreto a GitHub.</div></div>
+      <div class="row"><div class="k">Qué resuelve</div><div class="v">Hace la instalación perfecta y segura: llave en <code>.env</code>, wrapper por framework (Next, React, Vue, Nuxt, Astro, SvelteKit), init en el momento correcto, y evita los errores clásicos (como el <code>conversion</code> async en formularios).</div></div>
+      <div class="row"><div class="k">Cuándo se activa</div><div class="v">Al mencionar "Orwel SDK", "orwel.track", "PUBLIC_ORWEL_KEY" o pegar una llave <code>orwel_...</code>.</div></div>
+    </div>
+
+    <div class="skill anchor" id="hyper-llm">
+      <div class="head"><h3>hyper-llm</h3><span class="est">Producción</span></div>
+      <p class="tagline">Patrones de IA en producción: RAG, agentes y manejo de contexto grande.</p>
+      <div class="row"><div class="k">Por qué existe</div><div class="v">Nació de un dolor real: en TeamUp, las peticiones grandes a LLMs reventaban el contexto y el modelo dejaba de responder. Queríamos que ese conocimiento no se perdiera.</div></div>
+      <div class="row"><div class="k">Qué resuelve</div><div class="v">Da las recetas para que la IA aguante producción: presupuesto de tokens, extracción, map-reduce, lotes con reintentos, caché, RAG y agentes con límites. Evita el error #1 de proyectos con IA.</div></div>
+      <div class="row"><div class="k">Cuándo se activa</div><div class="v">"RAG", "agente de IA", "el LLM no responde", "excede el contexto", "procesar muchos con IA".</div></div>
+    </div>
+
+    <div class="skill anchor" id="hyper-core">
+      <div class="head"><h3>hyper-core</h3><span class="est">Producción</span></div>
+      <p class="tagline">Arquitectura para levantar un backend nuevo multi-tenant.</p>
+      <div class="row"><div class="k">Por qué existe</div><div class="v">Cada backend nuevo empezaba de una hoja en blanco, repitiendo (y a veces olvidando) las mismas decisiones de base: aislamiento de datos, auth, estructura.</div></div>
+      <div class="row"><div class="k">Qué resuelve</div><div class="v">Codifica el estándar: multi-tenant con <code>workspace_id</code> + RLS desde el día 1, auth con Magic Link, service layer obligatorio, validación y operación mínima.</div></div>
+      <div class="row"><div class="k">Cuándo se activa</div><div class="v">"nuevo backend", "API desde cero", "multi-tenant", "RLS", "service layer".</div></div>
+    </div>
+
+    <div class="skill anchor" id="hyper-sdk">
+      <div class="head"><h3>hyper-sdk</h3><span class="est">Producción</span></div>
+      <p class="tagline">Arquitectura para crear un SDK cliente nuevo con buena DX.</p>
+      <div class="row"><div class="k">Por qué existe</div><div class="v">Construir Orwel nos enseñó qué hace que un SDK sea agradable de usar (y qué lo arruina). Esa experiencia estaba en la cabeza de pocas personas.</div></div>
+      <div class="row"><div class="k">Qué resuelve</div><div class="v">Guía a diseñar la superficie pública primero, singleton con init, validación con mensajes claros, resiliencia invisible (cola, reintentos), empaquetado y docs.</div></div>
+      <div class="row"><div class="k">Cuándo se activa</div><div class="v">"crear SDK", "librería cliente", "envolver mi API", "publicar paquete".</div></div>
+    </div>
+
+    <div class="skill anchor" id="hyper-doc">
+      <div class="head"><h3>hyper-doc</h3><span class="est">Producción</span></div>
+      <p class="tagline">Genera documentación completa del proyecto donde se ejecuta.</p>
+      <div class="row"><div class="k">Por qué existe</div><div class="v">Los proyectos sin documentación (o con READMEs desactualizados) frenan a todo el que llega nuevo. Documentar a mano es tedioso y se pospone.</div></div>
+      <div class="row"><div class="k">Qué resuelve</div><div class="v">Lee el código real y genera README, arquitectura y guía de setup precisos — no inventados. Marca lo que falta y verifica que los comandos existan.</div></div>
+      <div class="row"><div class="k">Cuándo se activa</div><div class="v">"documenta este proyecto", "crea un README", "guía de setup", "explica la arquitectura".</div></div>
+    </div>
+
+    <div class="skill anchor" id="hyper-papers">
+      <div class="head"><h3>hyper-papers</h3><span class="est">Producción</span></div>
+      <p class="tagline">Escribe un "paper" técnico / case study de un proyecto implementado.</p>
+      <div class="row"><div class="k">Por qué existe</div><div class="v">El conocimiento valioso —por qué se tomó una decisión, qué se rompió y cómo se arregló— se queda en la cabeza de la gente y se pierde.</div></div>
+      <div class="row"><div class="k">Qué resuelve</div><div class="v">Convierte un proyecto en un documento narrativo que enseña: contexto, arquitectura, decisiones, lecciones de producción y patrones replicables. Como este Playbook.</div></div>
+      <div class="row"><div class="k">Cuándo se activa</div><div class="v">"haz un paper de", "case study", "documento técnico del proyecto", "post-mortem".</div></div>
+    </div>
+
+    <div class="skill anchor" id="hyper-env">
+      <div class="head"><h3>hyper-env</h3><span class="est">Producción</span></div>
+      <p class="tagline">Entornos de prueba para testear features de IA de forma confiable.</p>
+      <div class="row"><div class="k">Por qué existe</div><div class="v">Probar IA es distinto: las salidas no son deterministas, cuestan dinero y son lentas. Sin un método, o no pruebas, o gastas una fortuna en cada corrida.</div></div>
+      <div class="row"><div class="k">Qué resuelve</div><div class="v">Da tres niveles —unit con el modelo mockeado, evals con dataset dorado, y smoke real— más cómo hacer testeable lo no determinista (assert por propiedades, caché por hash).</div></div>
+      <div class="row"><div class="k">Cuándo se activa</div><div class="v">"testear IA", "evaluar el modelo", "mockear el LLM", "dataset de prueba", "evals".</div></div>
+    </div>
+
+    <div class="skill anchor" id="svelte-loading">
+      <div class="head"><h3>svelte-loading</h3><span class="est">Producción</span></div>
+      <p class="tagline">Carga de datos en SvelteKit 2 + Svelte 5: streaming, skeletons y gotchas.</p>
+      <div class="row"><div class="k">Por qué existe</div><div class="v">Se extrajo del código real de Orwel tras pelear con pantallas que parpadean, cargas que bloquean, y un crash fatal de Svelte 5 (<code>each_key_duplicate</code>).</div></div>
+      <div class="row"><div class="k">Qué resuelve</div><div class="v">El playbook para cargar datos sin parpadeo: streamear promesas, skeletons, <code>depends/invalidate</code>, preload, y evitar los anti-patrones que causaron bugs reales.</div></div>
+      <div class="row"><div class="k">Cuándo se activa</div><div class="v">Al trabajar con <code>load</code>, <code>{#await}</code>, skeletons o el crash <code>each_key_duplicate</code> en SvelteKit.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="crear" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Bonus</p>
+    <h2>Crea tu propia skill en tres minutos</h2>
+    <p class="lede">Durante el hackathon, si te encuentras explicándole lo mismo a la IA una y otra vez, conviértelo en una skill.</p>
+    <ul class="clean">
+      <li><b>1.</b> Crea la carpeta <code>skills/mi-skill/</code> (dentro de la convención de tu asistente, p. ej. <code>.claude/skills/</code>).</li>
+      <li><b>2.</b> Dentro, un <code>SKILL.md</code> con el frontmatter (<code>name</code> + <code>description</code>) y tus instrucciones.</li>
+      <li><b>3.</b> Escribe la <code>description</code> con las palabras que dispararían la skill. Listo: el asistente ya la usará.</li>
+    </ul>
+    <div class="callout tip"><p class="lbl">Para el hackathon</p><p>Una buena skill captura una regla o un error que ya cometiste: "siempre que hagas X, recuerda Y". Si tu equipo crea una skill propia durante el evento y la enseña en la demo, eso demuestra dominio real de las herramientas.</p></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><svg class="logo" style="height:20px" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg></div>
+    <p>Catálogo de Skills · Hackathon Hyperdigital × Google · 27 de junio de 2026</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var code=btn.closest('.codeblock').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(function(){
+        var t=btn.textContent;btn.textContent='Copiado';btn.classList.add('ok');
+        setTimeout(function(){btn.textContent=t;btn.classList.remove('ok');},1500);
+      });
+    });
+  });
+  (function(){
+    var inp=document.getElementById('skMatch'), res=document.getElementById('skRes'); if(!inp) return;
+    var SK=[
+      {n:'orwel',d:'Instala e integra el SDK de analítica Orwel.',k:['analitica','analytics','medir','tracking','track','visitas','visitantes','eventos','leads','conversion','orwel']},
+      {n:'hyper-llm',d:'IA en producción: RAG, agentes y contexto grande.',k:['ia','llm','rag','agente','agentes','contexto','tokens','embeddings','modelo','gemini','gpt','prompt','alucina','muchos datos','traba']},
+      {n:'hyper-core',d:'Backend nuevo multi-tenant (API, BD, auth).',k:['backend','api','base de datos','db','multi-tenant','tenant','rls','auth','login','servidor','postgres','supabase']},
+      {n:'hyper-sdk',d:'Crear un SDK cliente con buena DX.',k:['sdk','libreria','librería','paquete','npm','cliente','envolver']},
+      {n:'hyper-doc',d:'Genera documentación del proyecto.',k:['documentar','documentacion','documentación','readme','docs','explicar']},
+      {n:'hyper-papers',d:'Escribe un paper / case study técnico.',k:['paper','caso','case study','documento tecnico','post-mortem','postmortem','narrar']},
+      {n:'hyper-env',d:'Entornos de prueba para testear IA.',k:['test','testear','prueba','probar','eval','evals','mock','mockear','dataset']},
+      {n:'svelte-loading',d:'Carga de datos en SvelteKit + Svelte 5.',k:['svelte','sveltekit','carga','load','loading','skeleton','parpadeo','each_key']}
+    ];
+    function search(q){
+      q=q.toLowerCase();
+      if(!q.trim()){res.innerHTML='';return;}
+      var scored=SK.map(function(s){
+        var sc=0; s.k.forEach(function(kw){ if(q.indexOf(kw)>=0) sc+= kw.length>5?2:1; });
+        if(q.indexOf(s.n)>=0) sc+=3;
+        return {s:s,sc:sc};
+      }).filter(function(x){return x.sc>0}).sort(function(a,b){return b.sc-a.sc}).slice(0,2);
+      if(!scored.length){res.innerHTML='<div class="none">No encontré una coincidencia clara. Prueba con palabras como "medir", "documentar", "IA", "backend" o "testear".</div>';return;}
+      res.innerHTML=scored.map(function(x){return '<div class="hit"><b>'+x.s.n+'</b> — <span>'+x.s.d+'</span></div>';}).join('');
+    }
+    inp.addEventListener('input',function(){search(inp.value);});
+  })();
+</script>

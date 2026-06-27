@@ -1,0 +1,620 @@
+<title>TeamUp · Demo Interactivo — Hyperdigital × Google</title>
+<meta name="description" content="Un ATS tipo TeamUp, funcional y mock: carga masiva, análisis de CV, taxonomía de habilidades, scoring con IA, bolsa de trabajo, postulaciones y atribución — cada sección explicada en pantalla.">
+
+<style>
+  :root{
+    --ink:#14141b;--ink-strong:#0b0b12;--muted:#5e6275;--accent:#5B2EFF;--accent-weak:#efeafe;
+    --brand-from:#1FD3E0;--brand-mid:#3B5BFF;--brand-to:#6B2EFF;
+    --line:#e9e8f0;--line-strong:#d9d7e6;--bg:#ffffff;--bg-alt:#f7f7fb;--code-bg:#0e1018;
+    --ok:#0a7d4d;--ok-bg:#eef8f2;--ok-line:#bfe6d2;--warn:#9a6300;--warn-bg:#fdf6e9;--warn-line:#f0dcad;
+    --danger:#c0392b;--danger-bg:#fdf0ee;
+    --cyan:#00add9;--navy:#00008b;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg-alt);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  h1,h2,h3,h4{color:var(--ink-strong);line-height:1.25;letter-spacing:-.015em;font-weight:700;margin:0}
+  code{font-family:var(--mono);font-size:.86em}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  button{font-family:var(--sans)}
+
+  /* ---------- App shell ---------- */
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+  @media(max-width:880px){.app{grid-template-columns:1fr}}
+  .side{background:#fff;border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  @media(max-width:880px){.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}}
+  .side .brand{display:flex;align-items:center;gap:9px;padding:6px 8px 16px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .side .brand .logo{height:17px}
+  .side .brand .tag{font-size:11px;font-weight:700;color:var(--muted);background:var(--bg-alt);padding:2px 7px;border-radius:5px}
+  .navlabel{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 10px 4px}
+  .navitem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:9px 10px;border-radius:8px;font-size:14.5px;font-weight:500;color:var(--ink);transition:.12s}
+  .navitem:hover{background:var(--bg-alt)}
+  .navitem.on{background:var(--accent-weak);color:var(--accent);font-weight:600}
+  .navitem .ic{width:18px;height:18px;flex:none;color:currentColor}
+  .navitem .ic svg{width:18px;height:18px;display:block}
+  .side .foot{margin-top:18px;padding:12px 10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+
+  .main{padding:0;min-width:0}
+  .topbar{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px 30px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:14px}
+  .topbar h1{font-size:19px}
+  .topbar .crumb{font-size:13px;color:var(--muted);margin-left:auto}
+  .view{padding:26px 30px 60px;max-width:1080px}
+  @media(max-width:560px){.view,.topbar{padding-left:18px;padding-right:18px}}
+  .lede{color:var(--muted);font-size:16px;max-width:70ch;margin:0 0 22px}
+
+  /* ---------- Comic strip ---------- */
+  .comic{background:linear-gradient(180deg,#fbfaff,#fff);border:1px solid var(--line-strong);border-radius:14px;padding:20px;margin:0 0 24px}
+  .comic .ch{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+  .comic .ch .badge{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#fff;background:var(--accent);padding:4px 10px;border-radius:999px}
+  .comic .ch h3{font-size:16px}
+  .frames{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:760px){.frames{grid-template-columns:1fr 1fr}}
+  @media(max-width:440px){.frames{grid-template-columns:1fr}}
+  .frame{position:relative;background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px;min-height:118px}
+  .frame .n{position:absolute;top:-9px;left:-9px;width:24px;height:24px;border-radius:50%;background:var(--ink-strong);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;border:2px solid #fff}
+  .frame .ico{width:34px;height:34px;border-radius:9px;background:var(--accent-weak);display:grid;place-items:center;margin-bottom:9px;color:var(--accent)}
+  .frame .ico svg{width:20px;height:20px}
+  .frame b{display:block;font-size:14px;color:var(--ink-strong);margin-bottom:3px}
+  .frame span{font-size:12.5px;color:var(--muted);line-height:1.45}
+  .frame::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--line-strong);font-weight:800;font-size:18px;z-index:2}
+  .frame:last-child::after,.frame:nth-child(4n)::after{content:""}
+  @media(max-width:760px){.frame:nth-child(4n)::after{content:"→"}.frame:nth-child(2n)::after{content:""}}
+  @media(max-width:440px){.frame::after{content:""}}
+
+  /* ---------- Tip + code peek ---------- */
+  .tip{display:flex;gap:12px;align-items:flex-start;background:var(--ok-bg);border:1px solid var(--ok-line);border-left:3px solid var(--ok);border-radius:9px;padding:13px 16px;margin:16px 0}
+  .tip .lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ok);flex:none;padding-top:2px}
+  .tip p{margin:0;font-size:14px;color:var(--ink)}
+  .peek{margin:16px 0;border-radius:10px;overflow:hidden;border:1px solid #20222e;background:var(--code-bg)}
+  .peek summary{list-style:none;cursor:pointer;background:#171a24;color:#9aa0b4;font-size:12.5px;padding:9px 14px;font-family:var(--mono);display:flex;align-items:center;gap:8px}
+  .peek summary::-webkit-details-marker{display:none}
+  .peek summary::before{content:"▸";color:var(--accent);font-weight:800}
+  .peek[open] summary::before{content:"▾"}
+  .peek pre{margin:0;padding:14px 16px;overflow-x:auto;font-size:13px;line-height:1.65;color:#e6e8f0;font-family:var(--mono)}
+  .tok-c{color:#6b7186}.tok-k{color:#b79cff}.tok-s{color:#7fdbb0}.tok-f{color:#9cc7ff}.tok-d{color:#f0a878}
+
+  /* ---------- Cards / panels ---------- */
+  .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin:18px 0}
+  .panel h3{font-size:16px;margin-bottom:4px}
+  .panel .sub{color:var(--muted);font-size:13.5px;margin-bottom:14px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:0 0 22px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .stat .v{font-size:30px;font-weight:800;color:var(--ink-strong);font-variant-numeric:tabular-nums;line-height:1.1;margin-top:4px}
+  .stat .d{font-size:12.5px;color:var(--ok);margin-top:3px}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px;padding:10px 18px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:.12s}
+  .btn:hover{background:#3308d0}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.ghost{background:#fff;color:var(--accent)}
+  .btn.ghost:hover{background:var(--accent-weak)}
+  .btn.sm{padding:6px 12px;font-size:13px}
+
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;background:var(--bg-alt)}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--bg-alt)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px}
+  .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+  .pill.nuevo{color:var(--cyan);background:#e6f7fb}
+  .pill.entrevista{color:var(--navy);background:#e6e6f7}
+  .pill.oferta{color:var(--ok);background:var(--ok-bg)}
+  .pill.rechazado{color:var(--danger);background:var(--danger-bg)}
+  .scorebar{display:inline-flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums;font-weight:700}
+  .scorebar .track{width:54px;height:7px;border-radius:4px;background:var(--accent-weak);overflow:hidden}
+  .scorebar .fill{height:100%;background:var(--accent);border-radius:4px}
+
+  /* dropzone + progress */
+  .drop{border:2px dashed var(--line-strong);border-radius:12px;padding:30px;text-align:center;color:var(--muted);background:var(--bg-alt);transition:.15s}
+  .drop b{color:var(--ink-strong)}
+  .prog{height:10px;border-radius:6px;background:var(--accent-weak);overflow:hidden;margin:14px 0 6px}
+  .prog .pf{height:100%;width:0;background:var(--accent);border-radius:6px;transition:width .2s}
+  .log{background:var(--code-bg);border-radius:9px;padding:12px;font-family:var(--mono);font-size:12.5px;color:#e6e8f0;max-height:180px;overflow:auto;margin-top:12px}
+  .log .l{padding:2px 0;color:#aab}.log .l b{color:#7fdbb0}
+
+  /* taxonomy tree */
+  .tax{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:640px){.tax{grid-template-columns:1fr}}
+  .chipset{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-size:13px;padding:5px 11px;border-radius:7px;border:1px solid var(--line-strong);background:#fff;color:var(--ink)}
+  .chip.raw{border-style:dashed;color:var(--muted)}
+  .tree{font-family:var(--sans)}
+  .tnode{margin:3px 0}
+  .tcat{font-weight:700;color:var(--ink-strong);font-size:14px;display:flex;align-items:center;gap:7px;margin-top:8px}
+  .tcat::before{content:"";width:9px;height:9px;border-radius:3px;background:var(--accent)}
+  .tkids{display:flex;flex-wrap:wrap;gap:6px;padding-left:16px;margin-top:5px}
+  .tkid{font-size:12.5px;padding:3px 9px;border-radius:6px;background:var(--accent-weak);color:var(--accent)}
+
+  /* job board */
+  .jobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .job{border:1px solid var(--line);border-radius:12px;padding:18px;background:#fff;display:flex;flex-direction:column}
+  .job h4{font-size:16px;margin-bottom:4px}
+  .job .meta{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+  .job .sk{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+  .job .sk span{font-size:11.5px;padding:2px 8px;border-radius:6px;background:var(--bg-alt);color:var(--muted)}
+  .job .btn{margin-top:auto;justify-content:center}
+
+  /* attribution bars */
+  .bars{display:flex;flex-direction:column;gap:12px}
+  .bar{display:grid;grid-template-columns:130px 1fr 50px;align-items:center;gap:12px;font-size:14px}
+  .bar .bn{color:var(--ink-strong);font-weight:600}
+  .bar .bt{height:18px;background:var(--accent-weak);border-radius:6px;overflow:hidden}
+  .bar .bf{height:100%;background:linear-gradient(90deg,var(--accent),#6b3dff);border-radius:6px;transition:width .6s}
+  .bar .bv{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink-strong)}
+
+  /* form */
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--ink-strong);margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--sans);color:var(--ink)}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .modal-note{font-size:12.5px;color:var(--muted);margin-top:6px}
+
+  .hidden{display:none}
+  .muted{color:var(--muted)}
+  .arch{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+  .anode{border:1px solid var(--line);border-radius:10px;padding:13px;background:#fff;text-align:center}
+  .anode .t{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin-bottom:4px}
+  .anode .d{font-size:13px;color:var(--muted)}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <svg height="22" viewBox="0 0 214 52" fill="none" aria-label="TeamUp"><defs><linearGradient id="tlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1FD3E0"/><stop offset="0.5" stop-color="#3B5BFF"/><stop offset="1" stop-color="#6B2EFF"/></linearGradient></defs><rect x="8" y="8" width="32" height="32" rx="6" transform="rotate(45 24 24)" fill="url(#tlg)"/><text x="56" y="37" font-size="34" font-weight="800" letter-spacing="-1.5" fill="#0B0B0F" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">TeamUp</text></svg>
+      <span class="tag">demo</span>
+    </div>
+    <div class="navlabel">Reclutamiento</div>
+    <button class="navitem on" data-view="resumen"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Resumen</button>
+    <button class="navitem" data-view="carga"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg></span>Carga masiva</button>
+    <button class="navitem" data-view="analisis"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span>Análisis de CV</button>
+    <button class="navitem" data-view="taxonomia"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5L5.5 16.5M12 11.5l6.5 5"/></svg></span>Taxonomía</button>
+    <button class="navitem" data-view="candidatos"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 11l2 2 4-4"/></svg></span>Candidatos</button>
+    <div class="navlabel">Captación</div>
+    <button class="navitem" data-view="bolsa"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></span>Bolsa de trabajo</button>
+    <button class="navitem" data-view="postulaciones"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>Postulaciones</button>
+    <button class="navitem" data-view="atribucion"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span>Atribución</button>
+    <div class="foot">
+      Demo educativa · datos simulados (mock).<br>Hackathon Hyperdigital × Google.<br>
+      <a href="teamup-papers.html" target="_blank" rel="noopener">Ver el Playbook →</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="vTitle">Resumen</h1>
+      <span class="crumb">TeamUp Demo · todo es mock, juega sin miedo</span>
+    </div>
+
+    <!-- ============ RESUMEN ============ -->
+    <section class="view" data-pane="resumen">
+      <p class="lede">Un ATS (sistema de seguimiento de candidatos) tipo TeamUp, funcional y con datos simulados. Cada sección incluye una <b>tira que explica cómo funciona</b>, un consejo y el código detrás. No hay login: entra y juega.</p>
+      <div class="stats">
+        <div class="stat"><div class="k">Vacantes activas</div><div class="v">6</div><div class="d">+2 esta semana</div></div>
+        <div class="stat"><div class="k">Candidatos</div><div class="v" id="stCand">248</div><div class="d">+31 por carga masiva</div></div>
+        <div class="stat"><div class="k">Postulaciones</div><div class="v" id="stPost">87</div><div class="d">34% vía bolsa propia</div></div>
+        <div class="stat"><div class="k">Score promedio IA</div><div class="v">72</div><div class="d">de 0 a 100</div></div>
+      </div>
+
+      <div class="comic">
+        <div class="ch"><span class="badge">Cómo funciona</span><h3>La arquitectura, de un vistazo</h3></div>
+        <div class="frames">
+          <div class="frame"><span class="n">1</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 18l5 3M21 18l-5 3"/></svg></div><b>La interfaz</b><span>React + componentes. Solo pide datos; no sabe de la base ni de la IA.</span></div>
+          <div class="frame"><span class="n">2</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div><b>Service layer</b><span>Toda la lógica de datos vive aquí. Un solo lugar para cambiar, cachear o loguear.</span></div>
+          <div class="frame"><span class="n">3</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/></svg></div><b>Base de datos</b><span>Postgres con RLS: cada empresa solo ve sus datos (multi-tenant).</span></div>
+          <div class="frame"><span class="n">4</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><b>Capa de IA</b><span>Aislada y mockeable. Extrae CVs y puntúa candidatos sin reventar el contexto.</span></div>
+        </div>
+      </div>
+      <div class="tip"><span class="lbl">Consejo</span><p>Esta misma demo es una buena estructura de presentación: muestra el flujo de un candidato de principio a fin (carga → análisis → taxonomía → score → contratación) y el jurado entenderá tu producto en un minuto.</p></div>
+      <p class="muted" style="font-size:14px">Navega por el menú de la izquierda. Cada sección es interactiva — los botones de verdad hacen cosas (con datos simulados).</p>
+    </section>
+
+    <!-- ============ CARGA MASIVA ============ -->
+    <section class="view hidden" data-pane="carga">
+      <p class="lede">Sube cientos de CVs de golpe. El sistema los encola y los procesa <b>en lotes con concurrencia limitada</b>, para no saturar al proveedor de IA ni bloquear la interfaz.</p>
+      <div class="comic">
+        <div class="ch"><span class="badge">Cómo funciona</span><h3>De 200 archivos a 200 perfiles, sin caerse</h3></div>
+        <div class="frames">
+          <div class="frame"><span class="n">1</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 20h16"/></svg></div><b>Arrastras 200 CVs</b><span>Subes todo de una vez. La UI no se congela.</span></div>
+          <div class="frame"><span class="n">2</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="4" rx="1"/><rect x="4" y="10" width="16" height="4" rx="1"/><rect x="4" y="16" width="16" height="4" rx="1"/></svg></div><b>Se encolan</b><span>Entran a una cola. Nada se pierde si algo falla.</span></div>
+          <div class="frame"><span class="n">3</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></div><b>Lotes de 5</b><span>Se procesan 5 a la vez (mapLimit). Respeta el rate limit de la IA.</span></div>
+          <div class="frame"><span class="n">4</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div><b>Listos</b><span>Aparecen en la tabla con su perfil ya extraído.</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="drop" id="drop"><b>Suelta tus CVs aquí</b><br><span class="muted">(es una demo — pulsa el botón para simular 200 archivos)</span></div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn" id="bCarga">Simular carga de 200 CVs</button>
+          <span class="muted" id="cargaMsg" style="font-size:13.5px"></span>
+        </div>
+        <div class="prog"><div class="pf" id="cargaFill"></div></div>
+        <div class="log" id="cargaLog"><div class="l">La cola de procesamiento aparecerá aquí…</div></div>
+      </div>
+      <div class="tip"><span class="lbl">Consejo</span><p>Nunca proceses 200 llamadas a la IA en paralelo: revientas el rate limit del proveedor. Usa un tope de concurrencia (aquí, 5) y reintentos con espera creciente. Si una falla, márcala y sigue — degradación elegante.</p></div>
+      <details class="peek"><summary>código: cola con concurrencia limitada (mapLimit)</summary>
+<pre><span class="tok-k">async function</span> <span class="tok-f">mapLimit</span>(items, limit, fn) {
+  <span class="tok-k">const</span> results = []; <span class="tok-k">let</span> cursor = <span class="tok-d">0</span>;
+  <span class="tok-k">async function</span> <span class="tok-f">worker</span>() {
+    <span class="tok-k">while</span> (cursor &lt; items.length) {
+      <span class="tok-k">const</span> i = cursor++;
+      results[i] = <span class="tok-k">await</span> <span class="tok-f">withRetry</span>(() =&gt; <span class="tok-f">fn</span>(items[i]));  <span class="tok-c">// reintenta si falla</span>
+    }
+  }
+  <span class="tok-c">// lanza "limit" trabajadores que se reparten la cola</span>
+  <span class="tok-k">await</span> Promise.<span class="tok-f">all</span>(Array.<span class="tok-f">from</span>({ length: limit }, worker));
+  <span class="tok-k">return</span> results;
+}</pre></details>
+    </section>
+
+    <!-- ============ ANÁLISIS DE CV ============ -->
+    <section class="view hidden" data-pane="analisis">
+      <p class="lede">La IA lee un CV en texto crudo (lo que sale del OCR) y devuelve un <b>JSON compacto</b> con los campos clave. Razonas sobre el JSON, no sobre el PDF entero.</p>
+      <div class="comic">
+        <div class="ch"><span class="badge">Cómo funciona</span><h3>Extraer, no pegar</h3></div>
+        <div class="frames">
+          <div class="frame"><span class="n">1</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div><b>CV crudo</b><span>~1,100 tokens de texto ruidoso del OCR.</span></div>
+          <div class="frame"><span class="n">2</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><b>La IA extrae</b><span>Un modelo barato saca solo los campos clave.</span></div>
+          <div class="frame"><span class="n">3</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M8 21H5a2 2 0 01-2-2v-3M16 21h3a2 2 0 002-2v-3"/></svg></div><b>JSON compacto</b><span>~80 tokens. Listo para razonar.</span></div>
+          <div class="frame"><span class="n">4</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg></div><b>Se cachea</b><span>Por hash del CV: si no cambió, no se vuelve a pagar.</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="anaGrid">
+          <div>
+            <h3>CV en texto crudo</h3>
+            <div class="sub">tal cual sale del OCR</div>
+            <textarea id="cvText" rows="9" style="width:100%;border:1px solid var(--line-strong);border-radius:9px;padding:12px;font-family:var(--mono);font-size:13px">Ana Torres
+Desarrolladora Frontend · 6 años de experiencia
+Experta en React, TypeScript y diseño de sistemas.
+Lideró el rediseño de un panel SaaS usado por 12k usuarios.
+Conoce Node.js y despliegues en AWS.
+Educación: Ingeniería en Sistemas, 2018.</textarea>
+            <button class="btn" id="bAnalizar" style="margin-top:12px">Analizar CV con IA</button>
+          </div>
+          <div>
+            <h3>Perfil extraído</h3>
+            <div class="sub">JSON estructurado</div>
+            <pre id="cvOut" style="background:var(--code-bg);color:#e6e8f0;border-radius:9px;padding:14px;font-family:var(--mono);font-size:13px;min-height:200px;margin:0;overflow:auto">// pulsa "Analizar CV con IA"</pre>
+          </div>
+        </div>
+      </div>
+      <div class="tip"><span class="lbl">Consejo</span><p>Pide a la IA un <b>formato estructurado</b> (JSON con esquema) y valídalo antes de usarlo. Y dile explícitamente: "no inventes datos; si un campo no aparece, usa null". Así reduces alucinaciones.</p></div>
+      <details class="peek"><summary>código: extracción con caché por hash</summary>
+<pre><span class="tok-k">const</span> SYSTEM = <span class="tok-s">`Eres un parser de CVs. Extrae { nombre, anios_experiencia,
+  skills[], educacion }. No inventes: si falta, usa null.`</span>;
+
+<span class="tok-k">async function</span> <span class="tok-f">extractPerfil</span>(cvRaw) {
+  <span class="tok-k">const</span> key = <span class="tok-f">hash</span>(cvRaw);
+  <span class="tok-k">if</span> (cache.<span class="tok-f">has</span>(key)) <span class="tok-k">return</span> cache.<span class="tok-f">get</span>(key);  <span class="tok-c">// gratis</span>
+  <span class="tok-k">const</span> perfil = <span class="tok-k">await</span> <span class="tok-f">withRetry</span>(() =&gt;
+    llm.<span class="tok-f">json</span>({ system: SYSTEM, input: { cv_raw: cvRaw } }));
+  cache.<span class="tok-f">set</span>(key, perfil);
+  <span class="tok-k">return</span> perfil;
+}</pre></details>
+    </section>
+
+    <!-- ============ TAXONOMÍA ============ -->
+    <section class="view hidden" data-pane="taxonomia">
+      <p class="lede">"React", "ReactJS", "react.js" son lo mismo. Una <b>taxonomía de habilidades</b> normaliza los skills sueltos a un árbol canónico, para que el matching y los filtros funcionen de verdad.</p>
+      <div class="comic">
+        <div class="ch"><span class="badge">Cómo funciona</span><h3>Del caos a un árbol consistente</h3></div>
+        <div class="frames">
+          <div class="frame"><span class="n">1</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h6M4 12h10M4 17h7"/></svg></div><b>Skills sucios</b><span>Cada CV escribe lo mismo distinto.</span></div>
+          <div class="frame"><span class="n">2</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5"/></svg></div><b>Se normalizan</b><span>Sinónimos → un término canónico.</span></div>
+          <div class="frame"><span class="n">3</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v3M12 10l-6 7M12 10l6 7"/></svg></div><b>Se agrupan</b><span>En categorías (frontend, backend, datos…).</span></div>
+          <div class="frame"><span class="n">4</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M10 18h4"/></svg></div><b>Filtras y matcheas</b><span>Búsquedas y scoring consistentes.</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="tax">
+          <div>
+            <h3>Skills crudos (como llegan)</h3>
+            <div class="sub">extraídos de varios CVs</div>
+            <div class="chipset" id="rawSkills"></div>
+            <button class="btn" id="bTax" style="margin-top:16px">Normalizar en taxonomía</button>
+          </div>
+          <div>
+            <h3>Taxonomía canónica</h3>
+            <div class="sub">listo para filtrar y matchear</div>
+            <div class="tree" id="taxTree"><span class="muted" style="font-size:13.5px">pulsa "Normalizar"…</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tip"><span class="lbl">Consejo</span><p>La normalización ligera (sinónimos, minúsculas, quitar ".js") resuélvela con un <b>diccionario en código</b> — barato y exacto. Reserva la IA solo para skills nuevos o ambiguos que el diccionario no conoce. No todo necesita un LLM.</p></div>
+      <details class="peek"><summary>código: normalización con diccionario + fallback a IA</summary>
+<pre><span class="tok-k">const</span> ALIAS = { <span class="tok-s">'reactjs'</span>:<span class="tok-s">'react'</span>, <span class="tok-s">'react.js'</span>:<span class="tok-s">'react'</span>,
+  <span class="tok-s">'nodejs'</span>:<span class="tok-s">'node'</span>, <span class="tok-s">'js'</span>:<span class="tok-s">'javascript'</span>, <span class="tok-s">'ts'</span>:<span class="tok-s">'typescript'</span> };
+
+<span class="tok-k">function</span> <span class="tok-f">normalizar</span>(skill) {
+  <span class="tok-k">const</span> s = skill.<span class="tok-f">toLowerCase</span>().<span class="tok-f">trim</span>();
+  <span class="tok-k">return</span> ALIAS[s] ?? s;            <span class="tok-c">// barato y exacto</span>
+}
+<span class="tok-c">// Si normalizar() no lo conoce, ahí sí preguntas a la IA.</span></pre></details>
+    </section>
+
+    <!-- ============ CANDIDATOS ============ -->
+    <section class="view hidden" data-pane="candidatos">
+      <p class="lede">Evalúa a todos los candidatos de una vacante con IA usando <b>map-reduce</b>: cada uno se puntúa por separado y el ranking se arma en código. Aguanta cientos sin reventar el contexto.</p>
+      <div class="comic">
+        <div class="ch"><span class="badge">Cómo funciona</span><h3>Map-reduce: el patrón que salvó a TeamUp</h3></div>
+        <div class="frames">
+          <div class="frame"><span class="n">1</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg></div><b>N candidatos</b><span>Cada uno con su perfil compacto.</span></div>
+          <div class="frame"><span class="n">2</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M8 6h4M8 18h4M12 6v12"/></svg></div><b>MAP</b><span>Cada uno se puntúa solo, en paralelo (limitado).</span></div>
+          <div class="frame"><span class="n">3</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12M9 18h6"/></svg></div><b>REDUCE</b><span>Ordenas y filtras en código: exacto y gratis.</span></div>
+          <div class="frame"><span class="n">4</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1-6.3-4.6L5.7 21l2.3-7.1-6-4.5h7.6z"/></svg></div><b>Ranking</b><span>Los mejores arriba, con su motivo.</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+          <h3 style="margin:0">Vacante: Desarrollador Frontend Senior</h3>
+          <span class="muted" style="font-size:13px">requiere: react, typescript</span>
+          <button class="btn" id="bScore" style="margin-left:auto">Evaluar con IA (map-reduce)</button>
+        </div>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Candidato</th><th>Skills</th><th>Exp.</th><th>Score IA</th><th>Estado</th></tr></thead>
+          <tbody id="candBody"></tbody>
+        </table></div>
+        <p class="muted" id="scoreMsg" style="font-size:13px;margin-top:10px"></p>
+      </div>
+      <div class="tip"><span class="lbl">Consejo</span><p>Haz que la IA haga lo único que solo ella puede (entender el CV) y deja ordenar/filtrar/contar al código. Es exacto, instantáneo y gratis. Mezclar ambos bien es lo que distingue un proyecto sólido.</p></div>
+      <details class="peek"><summary>código: map-reduce sobre los candidatos</summary>
+<pre><span class="tok-c">// MAP: cada candidato por separado, 5 en paralelo, con reintentos</span>
+<span class="tok-k">const</span> scored = <span class="tok-k">await</span> <span class="tok-f">mapLimit</span>(candidatos, <span class="tok-d">5</span>, (c) =&gt;
+  <span class="tok-f">withRetry</span>(() =&gt; llm.<span class="tok-f">json</span>({
+    system: <span class="tok-s">'Devuelve {score:0-100, motivo}.'</span>,
+    input: { vacante, candidato: c.perfil }   <span class="tok-c">// JSON chico</span>
+  })));
+<span class="tok-c">// REDUCE: ordenar es trabajo de CÓDIGO, no del LLM</span>
+<span class="tok-k">const</span> ranking = scored.<span class="tok-f">sort</span>((a, b) =&gt; b.score - a.score);</pre></details>
+    </section>
+
+    <!-- ============ BOLSA DE TRABAJO ============ -->
+    <section class="view hidden" data-pane="bolsa">
+      <p class="lede">La página pública de empleos. Cada empresa (tenant) tiene su propia bolsa con su marca, y todas alimentan un marketplace general. Es lo que ve un candidato antes de postularse.</p>
+      <div class="comic">
+        <div class="ch"><span class="badge">Cómo funciona</span><h3>Público y privado, en el mismo sistema</h3></div>
+        <div class="frames">
+          <div class="frame"><span class="n">1</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div><b>Página pública</b><span>Sin login. Indexable por Google (SEO).</span></div>
+          <div class="frame"><span class="n">2</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6H4zM4 14h16v6H4z"/></svg></div><b>Por empresa (/b/slug)</b><span>Cada tenant con su marca y sus vacantes.</span></div>
+          <div class="frame"><span class="n">3</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></div><b>Marketplace</b><span>Una bolsa general que junta todo.</span></div>
+          <div class="frame"><span class="n">4</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><b>Postulación</b><span>El candidato aplica y entra al pipeline.</span></div>
+        </div>
+      </div>
+      <div class="jobs" id="jobs"></div>
+      <div class="tip"><span class="lbl">Consejo</span><p>Las páginas públicas son <b>solo lectura</b> y no necesitan la sesión del usuario — sepáralas de la app privada. Genéralas estáticas o con SSR para que carguen rápido y Google las indexe: tráfico orgánico gratis.</p></div>
+      <details class="peek"><summary>código: ruta pública por empresa (sin auth)</summary>
+<pre><span class="tok-c">// /b/:slug  ->  bolsa pública de una empresa, sin login</span>
+<span class="tok-k">export async function</span> <span class="tok-f">loadBolsa</span>(slug) {
+  <span class="tok-k">const</span> ws = <span class="tok-k">await</span> <span class="tok-f">getWorkspaceBySlug</span>(slug);
+  <span class="tok-k">return</span> {
+    empresa: ws.nombre,
+    vacantes: <span class="tok-k">await</span> <span class="tok-f">listVacantesPublicas</span>(ws.id)  <span class="tok-c">// solo estado=activa</span>
+  };
+}</pre></details>
+    </section>
+
+    <!-- ============ POSTULACIONES ============ -->
+    <section class="view hidden" data-pane="postulaciones">
+      <p class="lede">Cuando alguien se postula, su origen (de dónde vino) se captura en ese momento. Eso luego alimenta la <b>atribución</b>. El formulario se procesa en el servidor, no en el navegador.</p>
+      <div class="comic">
+        <div class="ch"><span class="badge">Cómo funciona</span><h3>Una postulación, de clic a pipeline</h3></div>
+        <div class="frames">
+          <div class="frame"><span class="n">1</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div><b>Llena el form</b><span>Datos + CV + origen (utm/fuente).</span></div>
+          <div class="frame"><span class="n">2</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></div><b>Lo recibe el servidor</b><span>Valida y guarda. El token secreto nunca toca el navegador.</span></div>
+          <div class="frame"><span class="n">3</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3"/></svg></div><b>IA + atribución</b><span>Extrae perfil y registra de dónde vino.</span></div>
+          <div class="frame"><span class="n">4</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12M9 18h6"/></svg></div><b>Entra al pipeline</b><span>Aparece como candidato "nuevo".</span></div>
+        </div>
+      </div>
+      <div class="panel" style="max-width:520px">
+        <h3>Postúlate: Frontend Senior</h3>
+        <div class="sub">formulario público (demo)</div>
+        <form id="postForm">
+          <div class="field"><label>Nombre</label><input type="text" required value="Diego Sosa"></div>
+          <div class="field"><label>Correo</label><input type="email" required value="diego@example.com"></div>
+          <div class="field"><label>¿Cómo te enteraste? (origen)</label>
+            <select id="postSrc"><option>LinkedIn</option><option>Bolsa propia</option><option>Referido</option><option>OCC</option><option>Google</option></select>
+          </div>
+          <button class="btn" type="submit">Enviar postulación</button>
+          <p class="modal-note">El origen se guarda para la atribución (ver la siguiente sección).</p>
+        </form>
+        <div id="postOut"></div>
+      </div>
+      <div class="tip"><span class="lbl">Consejo</span><p>Procesa el formulario en tu <b>backend</b>, nunca llames a tu API con el token secreto desde el navegador. Y captura el origen <b>en el momento de postularse</b>: si esperas, lo pierdes.</p></div>
+      <details class="peek"><summary>código: el origen se captura al enviar</summary>
+<pre><span class="tok-k">async function</span> <span class="tok-f">postular</span>(form) {
+  <span class="tok-k">const</span> origen = <span class="tok-f">getUTM</span>() ?? form.fuente;   <span class="tok-c">// captura AHORA</span>
+  <span class="tok-k">await</span> api.<span class="tok-f">crearPostulacion</span>({               <span class="tok-c">// en el servidor</span>
+    nombre: form.nombre, email: form.email,
+    vacante_id: form.vacanteId, origen,
+  });
+  <span class="tok-c">// la IA extrae el perfil en segundo plano</span>
+}</pre></details>
+    </section>
+
+    <!-- ============ ATRIBUCIÓN ============ -->
+    <section class="view hidden" data-pane="atribucion">
+      <p class="lede">¿De dónde vienen tus mejores candidatos? La <b>atribución</b> conecta cada contratación con su origen, para que sepas en qué canal invertir.</p>
+      <div class="comic">
+        <div class="ch"><span class="badge">Cómo funciona</span><h3>First-touch y last-touch</h3></div>
+        <div class="frames">
+          <div class="frame"><span class="n">1</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><b>Primer contacto</b><span>De dónde llegó la PRIMERA vez (first-touch).</span></div>
+          <div class="frame"><span class="n">2</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div><b>Último contacto</b><span>Qué canal cerró la postulación (last-touch).</span></div>
+          <div class="frame"><span class="n">3</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div><b>Se agrupa</b><span>Contrataciones por canal.</span></div>
+          <div class="frame"><span class="n">4</span><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg></div><b>Decides</b><span>Inviertes donde sí convierte.</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <h3 style="margin:0">Contrataciones por canal</h3>
+          <span class="muted" style="font-size:13px">últimos 90 días</span>
+        </div>
+        <div class="bars" id="attrBars"></div>
+      </div>
+      <div class="tip"><span class="lbl">Consejo</span><p>Conecta Orwel para esto sin esfuerzo: ya captura first/last-touch automáticamente. Mide qué canal trae a los candidatos que <b>realmente contratas</b>, no solo a los que se postulan — son métricas muy distintas.</p></div>
+      <details class="peek"><summary>código: contratados agrupados por origen</summary>
+<pre><span class="tok-c">// "reduce" en código: contar por canal es exacto y gratis</span>
+<span class="tok-k">const</span> porCanal = contratados.<span class="tok-f">reduce</span>((acc, c) =&gt; {
+  acc[c.origen] = (acc[c.origen] ?? <span class="tok-d">0</span>) + <span class="tok-d">1</span>;
+  <span class="tok-k">return</span> acc;
+}, {});
+<span class="tok-c">// -> { 'Bolsa propia': 9, 'Referido': 7, 'LinkedIn': 5, ... }</span></pre></details>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  // ---------- navegación entre vistas ----------
+  var titles={resumen:'Resumen',carga:'Carga masiva',analisis:'Análisis de CV',taxonomia:'Taxonomía de habilidades',candidatos:'Candidatos',bolsa:'Bolsa de trabajo',postulaciones:'Postulaciones',atribucion:'Atribución'};
+  document.querySelectorAll('.navitem').forEach(function(b){
+    b.addEventListener('click',function(){
+      var v=b.getAttribute('data-view');
+      document.querySelectorAll('.navitem').forEach(function(x){x.classList.toggle('on',x===b)});
+      document.querySelectorAll('.view').forEach(function(p){p.classList.toggle('hidden',p.getAttribute('data-pane')!==v)});
+      document.getElementById('vTitle').textContent=titles[v];
+      window.scrollTo(0,0);
+    });
+  });
+
+  // ---------- Carga masiva ----------
+  (function(){
+    var btn=document.getElementById('bCarga'),fill=document.getElementById('cargaFill'),log=document.getElementById('cargaLog'),msg=document.getElementById('cargaMsg');
+    btn.addEventListener('click',function(){
+      btn.disabled=true; log.innerHTML=''; fill.style.width='0%';
+      var total=200, lote=5, done=0, batch=0;
+      msg.textContent='Procesando en lotes de '+lote+' (concurrencia limitada)…';
+      var timer=setInterval(function(){
+        batch++; done=Math.min(total,done+lote);
+        fill.style.width=(done/total*100)+'%';
+        var fails=(batch%7===0)?1:0;
+        var line=document.createElement('div'); line.className='l';
+        line.innerHTML='lote #'+batch+'  ·  extraídos <b>'+(lote-fails)+'/'+lote+'</b>'+(fails?'  ·  1 reintento':'')+'  ·  total '+done+'/'+total;
+        log.appendChild(line); log.scrollTop=log.scrollHeight;
+        if(done>=total){clearInterval(timer);btn.disabled=false;
+          msg.textContent='Listo: 200 CVs procesados, perfiles extraídos.';
+          var st=document.getElementById('stCand'); if(st) st.textContent='448';
+        }
+      },130);
+    });
+  })();
+
+  // ---------- Análisis de CV ----------
+  (function(){
+    var btn=document.getElementById('bAnalizar'),out=document.getElementById('cvOut'),ta=document.getElementById('cvText');
+    btn.addEventListener('click',function(){
+      out.textContent='// extrayendo…'; btn.disabled=true;
+      var txt=ta.value;
+      setTimeout(function(){
+        var exp=(txt.match(/(\d+)\s*años?/)||[])[1]||4;
+        var pool=['react','typescript','node','aws','figma','python','sql'];
+        var skills=pool.filter(function(s){return txt.toLowerCase().indexOf(s)>=0});
+        if(!skills.length) skills=['comunicación'];
+        var nombre=(txt.match(/[A-ZÁÉÍÓÚ][a-záéíóú]+\s+[A-ZÁÉÍÓÚ][a-záéíóú]+/)||['Candidato'])[0];
+        var edu=(txt.match(/ingenier[íi]a[^\n.]*/i)||txt.match(/lic[^\n.]*/i)||[null])[0];
+        var json={nombre:nombre,anios_experiencia:Number(exp),skills:skills,educacion:edu?edu.trim():null};
+        out.textContent=JSON.stringify(json,null,2);
+        btn.disabled=false;
+      },550);
+    });
+  })();
+
+  // ---------- Taxonomía ----------
+  (function(){
+    var raw=['ReactJS','react.js','REACT','TypeScript','ts','Node','nodejs','JavaScript','js','Python','PostgreSQL','postgres','Figma','UI/UX','aws','Amazon Web Services'];
+    var rc=document.getElementById('rawSkills');
+    raw.forEach(function(s){var c=document.createElement('span');c.className='chip raw';c.textContent=s;rc.appendChild(c);});
+    var ALIAS={'reactjs':'react','react.js':'react','react':'react','typescript':'typescript','ts':'typescript','node':'node','nodejs':'node','javascript':'javascript','js':'javascript','python':'python','postgresql':'postgres','postgres':'postgres','figma':'figma','ui/ux':'diseño ux','aws':'aws','amazon web services':'aws'};
+    var CAT={'Frontend':['react','javascript','typescript','diseño ux','figma'],'Backend':['node','python'],'Datos':['postgres'],'Infraestructura':['aws']};
+    document.getElementById('bTax').addEventListener('click',function(){
+      var norm={}; raw.forEach(function(s){var n=ALIAS[s.toLowerCase().trim()]; if(n) norm[n]=1;});
+      var tree=document.getElementById('taxTree'); tree.innerHTML='';
+      Object.keys(CAT).forEach(function(cat){
+        var kids=CAT[cat].filter(function(k){return norm[k]});
+        if(!kids.length) return;
+        var node=document.createElement('div'); node.className='tnode';
+        node.innerHTML='<div class="tcat">'+cat+'</div><div class="tkids">'+kids.map(function(k){return '<span class="tkid">'+k+'</span>'}).join('')+'</div>';
+        tree.appendChild(node);
+      });
+    });
+  })();
+
+  // ---------- Candidatos / scoring ----------
+  (function(){
+    var cands=[
+      {n:'Carla Méndez',sk:'react, typescript, figma',ex:9,st:'nuevo'},
+      {n:'Ana Torres',sk:'react, typescript, node',ex:6,st:'entrevista'},
+      {n:'Diego Sosa',sk:'python, sql, javascript',ex:5,st:'nuevo'},
+      {n:'Beto Ramírez',sk:'html, css, javascript',ex:2,st:'nuevo'}
+    ];
+    var body=document.getElementById('candBody');
+    function render(){
+      body.innerHTML=cands.map(function(c){
+        var sc=c.score!=null?'<span class="scorebar">'+c.score+'<span class="track"><span class="fill" style="width:'+c.score+'%"></span></span></span>':'<span class="muted">—</span>';
+        return '<tr><td><b>'+c.n+'</b></td><td class="muted">'+c.sk+'</td><td>'+c.ex+' años</td><td>'+sc+'</td><td><span class="pill '+c.st+'">'+c.st+'</span></td></tr>';
+      }).join('');
+    }
+    render();
+    document.getElementById('bScore').addEventListener('click',function(){
+      var btn=this; btn.disabled=true;
+      document.getElementById('scoreMsg').textContent='MAP: evaluando cada candidato (5 en paralelo)…';
+      // score mock basado en skills/experiencia vs vacante (react+typescript)
+      cands.forEach(function(c){
+        var s=40; if(c.sk.indexOf('react')>=0)s+=28; if(c.sk.indexOf('typescript')>=0)s+=20; s+=Math.min(12,c.ex);
+        c.score=Math.min(99,s);
+      });
+      setTimeout(function(){
+        cands.sort(function(a,b){return b.score-a.score}); // REDUCE: ordenar en código
+        render();
+        document.getElementById('scoreMsg').textContent='REDUCE: ranking ordenado en código. 4 evaluados, 0 fallidos.';
+        btn.disabled=false;
+      },700);
+    });
+  })();
+
+  // ---------- Bolsa de trabajo ----------
+  (function(){
+    var jobs=[
+      {t:'Desarrollador Frontend Senior',m:'Remoto · Tiempo completo',sk:['react','typescript']},
+      {t:'Diseñador UX',m:'CDMX · Híbrido',sk:['figma','diseño ux']},
+      {t:'Ingeniero Backend',m:'Remoto · Tiempo completo',sk:['node','postgres']},
+      {t:'Data Analyst',m:'Monterrey · Presencial',sk:['python','sql']},
+      {t:'Product Manager',m:'Remoto · Tiempo completo',sk:['producto','agile']},
+      {t:'DevOps',m:'Remoto · Contrato',sk:['aws','docker']}
+    ];
+    var g=document.getElementById('jobs');
+    g.innerHTML=jobs.map(function(j){
+      return '<div class="job"><h4>'+j.t+'</h4><div class="meta">'+j.m+'</div><div class="sk">'+j.sk.map(function(s){return '<span>'+s+'</span>'}).join('')+'</div><button class="btn ghost sm" onclick="document.querySelector(\'[data-view=postulaciones]\').click()">Postularme →</button></div>';
+    }).join('');
+  })();
+
+  // ---------- Postulaciones ----------
+  (function(){
+    var f=document.getElementById('postForm'),out=document.getElementById('postOut');
+    f.addEventListener('submit',function(e){
+      e.preventDefault();
+      var src=document.getElementById('postSrc').value;
+      out.innerHTML='<div class="tip" style="margin-top:16px"><span class="lbl">Enviada</span><p>Postulación recibida en el servidor. Origen <b>'+src+'</b> guardado para atribución. La IA está extrayendo el perfil… el candidato ya aparece como "nuevo" en el pipeline.</p></div>';
+      var st=document.getElementById('stPost'); if(st) st.textContent='88';
+    });
+  })();
+
+  // ---------- Atribución ----------
+  (function(){
+    var data=[['Bolsa propia',9],['Referido',7],['LinkedIn',5],['OCC',3],['Google',2]];
+    var max=9, el=document.getElementById('attrBars');
+    el.innerHTML=data.map(function(d){
+      return '<div class="bar"><span class="bn">'+d[0]+'</span><span class="bt"><span class="bf" style="width:0%" data-w="'+(d[1]/max*100)+'"></span></span><span class="bv">'+d[1]+'</span></div>';
+    }).join('');
+    // animar al entrar a la vista
+    var obs=new MutationObserver(function(){
+      var pane=document.querySelector('[data-pane=atribucion]');
+      if(pane && !pane.classList.contains('hidden')){
+        el.querySelectorAll('.bf').forEach(function(b){b.style.width=b.getAttribute('data-w')+'%';});
+      }
+    });
+    obs.observe(document.querySelector('[data-pane=atribucion]'),{attributes:true,attributeFilter:['class']});
+  })();
+</script>

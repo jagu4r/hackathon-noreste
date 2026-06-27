@@ -1,0 +1,308 @@
+<title>Primeros Pasos — Hackathon Hyperdigital × Google</title>
+<meta name="description" content="Guía para principiantes: terminal, Node, estructura de un proyecto, variables de entorno, cómo proteger tus secretos, Git, y dónde van las skills.">
+
+<style>
+  :root{
+    --ink:#1c1d28;--ink-strong:#170175;--muted:#5c5f72;--accent:#3F00FF;--accent-weak:#efeaff;
+    --line:#e9e7f3;--line-strong:#d8d4ec;--bg:#ffffff;--bg-alt:#f7f5fd;--code-bg:#0e1018;
+    --ok:#0a7d4d;--ok-bg:#eef8f2;--ok-line:#bfe6d2;--warn:#9a6300;--warn-bg:#fdf6e9;--warn-line:#f0dcad;
+    --danger:#c0392b;--danger-bg:#fdf0ee;--danger-line:#f2cdc7;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,monospace;--maxw:1040px;
+  }
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline;text-underline-offset:2px}
+  h1,h2,h3,h4{color:var(--ink-strong);line-height:1.25;letter-spacing:-.018em;font-weight:700}
+  p{margin:0 0 16px}code{font-family:var(--mono);font-size:.875em}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:14px;height:60px;max-width:1180px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.02em;color:var(--ink-strong)}
+  .brand .logo{height:18px;width:auto;display:block}.brand .sep{color:var(--line-strong);font-weight:400}
+  .brand .doc{color:var(--muted);font-weight:600;font-size:15px}
+  nav.top .links{margin-left:auto;display:flex;gap:18px;font-size:14px;font-weight:500}
+  nav.top .links a{color:var(--muted)}nav.top .links a:hover{color:var(--ink-strong);text-decoration:none}
+  @media(max-width:820px){nav.top .links{display:none}}
+  header.hero{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#faf9fe,#fff)}
+  header.hero .wrap{padding-top:64px;padding-bottom:50px}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  header.hero h1{font-size:clamp(34px,5vw,52px);margin:0 0 18px;max-width:18ch}
+  header.hero .lead{font-size:clamp(18px,2.2vw,21px);color:var(--muted);max-width:62ch;margin:0}
+  section{padding:50px 0;border-bottom:1px solid var(--line)}
+  section:nth-of-type(even){background:var(--bg-alt)}
+  section h2{font-size:clamp(24px,3vw,31px);margin:0 0 10px}
+  .seclabel{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin:0 0 12px;display:flex;align-items:center;gap:10px}
+  .seclabel .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px}
+  section .lede{color:var(--muted);font-size:18px;max-width:66ch;margin:0 0 24px}
+  h3.sub{font-size:19px;margin:28px 0 8px}
+  .callout{border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:16px 20px;margin:20px 0;background:#fff}
+  .callout .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 5px}
+  .callout p{margin:0;color:var(--ink)}.callout p+p{margin-top:8px}
+  .callout.simple{border-left-color:var(--accent);background:var(--accent-weak)}.callout.simple .lbl{color:var(--accent)}
+  .callout.note{border-left-color:var(--accent)}.callout.note .lbl{color:var(--accent)}
+  .callout.tip{border-left-color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line)}.callout.tip .lbl{color:var(--ok)}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-bg);border-color:var(--warn-line)}.callout.warn .lbl{color:var(--warn)}
+  .callout.danger{border-left-color:var(--danger);background:var(--danger-bg);border-color:var(--danger-line)}.callout.danger .lbl{color:var(--danger)}
+  .codeblock{margin:18px 0;border-radius:10px;overflow:hidden;border:1px solid #20222e;background:var(--code-bg)}
+  .codeblock .bar{display:flex;align-items:center;background:#171a24;color:#9aa0b4;font-size:12.5px;padding:9px 14px;font-family:var(--mono);border-bottom:1px solid #20222e}
+  .codeblock .bar .fn{font-weight:600}
+  .codeblock .copy{margin-left:auto;background:transparent;color:#9aa0b4;border:1px solid #2c2f3d;border-radius:6px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .codeblock .copy:hover{color:#fff;border-color:#454a5e}.codeblock .copy.ok{color:#5fd9a0;border-color:#2f6b50}
+  .codeblock pre{margin:0;padding:16px;overflow-x:auto;font-size:13.5px;line-height:1.7}
+  .codeblock code{font-family:var(--mono);color:#e6e8f0;font-size:13.5px}
+  .tok-c{color:#6b7186}.tok-k{color:#b79cff}.tok-s{color:#7fdbb0}.tok-f{color:#9cc7ff}.tok-d{color:#f0a878}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:20px 0;background:#fff}
+  table{border-collapse:collapse;width:100%;min-width:460px;font-size:15px}
+  th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;background:var(--bg-alt)}
+  td code{background:var(--accent-weak);color:var(--accent);padding:2px 6px;border-radius:5px}
+  tr:last-child td{border-bottom:none}
+  .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:22px 0}
+  .feature{background:#fff;padding:22px}
+  .feature h3{font-size:16px;margin:0 0 6px;display:flex;align-items:center;gap:9px}
+  .feature h3::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--accent);flex:none}
+  .feature p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+  ul.clean{list-style:none;padding:0;margin:16px 0;display:flex;flex-direction:column;gap:10px}
+  ul.clean li{padding-left:24px;position:relative;color:var(--ink)}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  ul.clean li b{color:var(--ink-strong)}
+  .tree{background:var(--code-bg);color:#e6e8f0;border-radius:10px;padding:18px;font-family:var(--mono);font-size:13.5px;line-height:1.9;overflow-x:auto;margin:18px 0;white-space:pre;border:1px solid #20222e}
+  .tree .c{color:#6b7186}.tree .h{color:#9cc7ff}.tree .d{color:#f0a878;font-weight:700}
+  .widget{background:#fff;border:1px solid var(--line-strong);border-radius:12px;padding:22px;margin:24px 0}
+  .widget .wlabel{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  .widget>p{color:var(--muted);font-size:15px;margin:0 0 12px}
+  .widget input[type=text]{width:100%;border:1px solid var(--line-strong);border-radius:9px;padding:11px 12px;font-family:var(--mono);font-size:14px;color:var(--ink);background:#fff;margin-top:10px}
+  .widget input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .wlog{background:var(--code-bg);border-radius:9px;padding:13px;font-family:var(--mono);font-size:13px;color:#e6e8f0;max-height:240px;overflow:auto;line-height:1.6}
+  .wlog .ln{white-space:pre-wrap;word-break:break-word}
+  .wlog .cmd{color:#9cc7ff}.wlog .ph{color:#6b7186}
+  kbd{background:#fff;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:6px;padding:2px 7px;font-size:13px;color:var(--ink-strong);font-family:var(--sans)}
+  footer{padding:42px 0;text-align:center;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--bg-alt)}
+  footer a{color:var(--accent)}footer .brand{justify-content:center;margin-bottom:10px}
+  .anchor{scroll-margin-top:76px}
+</style>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand"><svg class="logo" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg><span class="sep">/</span><span class="doc">Primeros Pasos</span></span>
+    <span class="links">
+      <a href="inico.html" target="_blank" rel="noopener">Hub</a>
+      <a href="#terminal">Terminal</a>
+      <a href="#proyecto">Proyecto</a>
+      <a href="#env">.env</a>
+      <a href="#git">Git</a>
+      <a href="#skills">Skills</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Hackathon Hyperdigital × Google · Guía para empezar</p>
+    <h1>Del cero a tu primer proyecto</h1>
+    <p class="lead">Si nunca has programado o te pierdes con los términos técnicos, esta guía es para ti. Sin dar nada por sentado: qué instalar, qué es cada cosa, cómo proteger tus llaves y cómo no perder tu trabajo.</p>
+  </div>
+</header>
+
+<main>
+<section id="herramientas" class="anchor">
+  <div class="wrap">
+    <p class="seclabel"><span class="n">1</span>Lo que necesitas</p>
+    <h2>Tus tres herramientas básicas</h2>
+    <div class="features">
+      <div class="feature"><h3>Un navegador</h3><p>Chrome, Edge o el que uses. Para ver tu sitio y abrir las guías. Ya lo tienes.</p></div>
+      <div class="feature"><h3>Un editor de código</h3><p>VS Code es el más común y gratis. Es como Word, pero para código: ahí escribes y organizas tus archivos.</p></div>
+      <div class="feature"><h3>Node.js</h3><p>El motor que hace correr proyectos web modernos. Trae <code>npm</code>, que instala piezas hechas por otros. Descárgalo de nodejs.org.</p></div>
+    </div>
+    <div class="callout simple"><p class="lbl">¿Qué es npm?</p><p>Piensa en npm como una tienda gigante y gratuita de piezas ya armadas. En vez de construir todo desde cero, escribes <code>npm install</code> y traes la pieza que necesitas (por ejemplo, <code>orwel</code>).</p></div>
+  </div>
+</section>
+
+<section id="terminal" class="anchor">
+  <div class="wrap">
+    <p class="seclabel"><span class="n">2</span>La terminal, sin miedo</p>
+    <h2>Esa "pantalla negra" es tu amiga</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>La terminal es una forma de darle órdenes a la computadora escribiendo, en vez de hacer clic. Escribes un comando, presionas <kbd>Enter</kbd>, y pasa algo. No vas a romper nada por escribir un comando.</p></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Comando</th><th>Qué hace</th></tr></thead>
+      <tbody>
+        <tr><td><code>cd mi-carpeta</code></td><td>"Entrar" a una carpeta (change directory).</td></tr>
+        <tr><td><code>ls</code> (o <code>dir</code> en Windows)</td><td>Ver qué archivos hay donde estás.</td></tr>
+        <tr><td><code>npm install</code></td><td>Instalar las piezas que el proyecto necesita.</td></tr>
+        <tr><td><code>npm run dev</code></td><td>Encender el proyecto en tu compu para verlo en el navegador.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="widget">
+      <p class="wlabel">Terminal de práctica</p>
+      <p>Escribe un comando y presiona <kbd>Enter</kbd>. Prueba: <code>ls</code>, <code>cd src</code>, <code>npm install</code>, <code>git status</code>, <code>help</code>.</p>
+      <div class="wlog" id="termOut"><div class="ln ph">Escribe un comando abajo y presiona Enter.</div></div>
+      <input type="text" id="termIn" placeholder="escribe aquí…" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="callout note"><p class="lbl">Tip</p><p>En VS Code abres una terminal integrada desde el menú <em>Terminal → Nueva terminal</em>. Queda apuntando a tu proyecto automáticamente.</p></div>
+  </div>
+</section>
+
+<section id="proyecto" class="anchor">
+  <div class="wrap">
+    <p class="seclabel"><span class="n">3</span>Anatomía de un proyecto</p>
+    <h2>¿Qué es cada archivo y carpeta?</h2>
+    <p class="lede">Cuando abres un proyecto te encuentras muchos archivos. La mayoría no los tocas. Estos son los que importan:</p>
+    <div class="tree">mi-proyecto/
+├── <span class="d">src/</span>            <span class="c"># tu código vive aquí (lo que tú escribes)</span>
+├── <span class="d">node_modules/</span>   <span class="c"># las piezas de npm. NO se toca, NO se sube</span>
+├── <span class="d">skills/</span>         <span class="c"># las skills para tu asistente de IA</span>
+├── <span class="h">package.json</span>    <span class="c"># la "ficha" del proyecto: nombre y piezas que usa</span>
+├── <span class="h">.env</span>            <span class="c"># tus llaves secretas (NUNCA se sube)</span>
+├── <span class="h">.env.example</span>    <span class="c"># plantilla de qué llaves se necesitan (sí se sube)</span>
+└── <span class="h">.gitignore</span>      <span class="c"># lista de lo que Git debe ignorar</span></div>
+    <ul class="clean">
+      <li><b><code>src/</code></b> — tu trabajo. Aquí editas páginas y componentes.</li>
+      <li><b><code>node_modules/</code></b> — se crea solo al hacer <code>npm install</code>. Pesa mucho; jamás se sube ni se edita.</li>
+      <li><b><code>package.json</code></b> — dice qué piezas usa el proyecto y qué comandos tiene (mira la sección <code>"scripts"</code>).</li>
+      <li><b><code>.env</code></b> — guarda tus secretos (como la API key de Orwel). Más sobre esto abajo.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="env" class="anchor">
+  <div class="wrap">
+    <p class="seclabel"><span class="n">4</span>Variables de entorno (.env)</p>
+    <h2>Dónde guardar tus llaves secretas</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Una "variable de entorno" es un dato secreto que tu proyecto necesita pero que no debe estar a la vista en el código, como una contraseña. El archivo <code>.env</code> es la cajita donde guardas esos secretos, separados del código que todos pueden ver.</p></div>
+    <p>Un <code>.env</code> es solo una lista de <code>NOMBRE=valor</code>, una por línea:</p>
+    <div class="codeblock"><div class="bar"><span class="fn">.env</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-d">VITE_ORWEL_KEY</span>=orwel_tu_llave_secreta_aqui
+<span class="tok-d">OTRA_LLAVE</span>=valor123</code></pre></div>
+    <p>Y en el código la lees por su nombre, sin escribir el valor real:</p>
+    <div class="codeblock"><div class="bar"><span class="fn">en tu código</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">const</span> apiKey = import.meta.env.<span class="tok-d">VITE_ORWEL_KEY</span>;  <span class="tok-c">// lee del .env</span></code></pre></div>
+    <div class="callout warn"><p class="lbl">Por qué tanto cuidado</p><p>Si subes tu API key a internet, cualquiera puede usarla y gastar tu cuota o ensuciar tus datos. Por eso el <code>.env</code> se mantiene solo en tu computadora.</p></div>
+    <p>El <code>.env.example</code> es una copia <em>sin</em> los valores reales, solo los nombres. Esa sí se sube, para que tus compañeros sepan qué llaves hace falta conseguir.</p>
+  </div>
+</section>
+
+<section id="secretos" class="anchor">
+  <div class="wrap">
+    <p class="seclabel"><span class="n">5</span>Proteger tus secretos</p>
+    <h2>Cómo NO publicar tus llaves por accidente</h2>
+    <p class="lede">El error más común (y peligroso) de principiantes: subir el <code>.env</code> a internet sin querer. Aquí está cómo evitarlo.</p>
+    <h3 class="sub">El archivo <code>.gitignore</code></h3>
+    <p>Es una lista de archivos que Git debe ignorar — nunca subirlos. Asegúrate de que incluya <code>.env</code> y <code>node_modules</code>:</p>
+    <div class="codeblock"><div class="bar"><span class="fn">.gitignore</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>node_modules
+.env
+.env.local
+dist</code></pre></div>
+    <div class="callout danger"><p class="lbl">Si ya publicaste una llave</p><p>Considérala "quemada". Ve al sitio que la emitió (ej. orwel.io), bórrala y genera una nueva (esto se llama "rotar" la llave). Quitarla del código no basta: ya quedó en el historial.</p></div>
+    <div class="callout tip"><p class="lbl">Regla de oro</p><p>Antes de subir tu trabajo, pregúntate: "¿hay alguna contraseña o llave en estos archivos?". Si la respuesta es sí, debe estar en <code>.env</code> y el <code>.env</code> en <code>.gitignore</code>.</p></div>
+  </div>
+</section>
+
+<section id="git" class="anchor">
+  <div class="wrap">
+    <p class="seclabel"><span class="n">6</span>Git en cinco minutos</p>
+    <h2>Para no perder tu trabajo</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Git es como los "puntos de guardado" de un videojuego. Cada vez que avanzas algo, guardas un punto (un "commit"). Si algo se rompe, vuelves a un punto anterior. Y permite que varias personas trabajen sin pisarse. GitHub es la nube donde guardas esos puntos.</p></div>
+    <div class="codeblock"><div class="bar"><span class="fn">Guardar un punto y subirlo</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>git add .                          <span class="tok-c"># prepara todos los cambios</span>
+git commit -m <span class="tok-s">"Agregué el formulario"</span>   <span class="tok-c"># guarda el punto, con una nota</span>
+git push                           <span class="tok-c"># súbelo a la nube (GitHub)</span></code></pre></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Comando</th><th>Qué hace</th></tr></thead>
+      <tbody>
+        <tr><td><code>git status</code></td><td>Ver qué cambiaste desde el último punto.</td></tr>
+        <tr><td><code>git add .</code></td><td>Marcar todos los cambios para guardar.</td></tr>
+        <tr><td><code>git commit -m "nota"</code></td><td>Crear el punto de guardado con una descripción.</td></tr>
+        <tr><td><code>git push</code></td><td>Subir tus puntos a GitHub.</td></tr>
+        <tr><td><code>git pull</code></td><td>Bajar los cambios que subió un compañero.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout note"><p class="lbl">Ramas (branches), el siguiente nivel</p><p>Una rama es una línea de trabajo paralela. Creas una con <code>git checkout -b mi-rama</code> para experimentar sin romper lo que funciona. Cuando queda bien, se une (merge) a la principal. En equipo, cada quien trabaja en su rama.</p></div>
+  </div>
+</section>
+
+<section id="skills" class="anchor">
+  <div class="wrap">
+    <p class="seclabel"><span class="n">7</span>Las skills</p>
+    <h2>Dónde van y cómo se cargan</h2>
+    <div class="callout simple"><p class="lbl">En palabras simples</p><p>Una skill es un instructivo que le das a tu asistente de IA para que haga algo bien y a nuestra manera. Es una carpeta con un archivo <code>SKILL.md</code> adentro. Tú no la "ejecutas": el asistente la detecta sola y la usa cuando hace falta.</p></div>
+    <p>Para instalar el pack, copia las carpetas de skills en tu proyecto, dentro de la carpeta que use tu asistente. Por ejemplo, en Claude Code es <code>.claude/skills/</code>; otros asistentes (Gemini, Cursor…) usan su propia convención.</p>
+    <div class="tree">mi-proyecto/
+└── <span class="d">.claude/</span>
+    └── <span class="d">skills/</span>
+        ├── <span class="d">orwel/</span>
+        │   └── <span class="h">SKILL.md</span>      <span class="c"># cada skill = una carpeta con su SKILL.md</span>
+        ├── <span class="d">hyper-llm/</span>
+        │   └── <span class="h">SKILL.md</span>
+        └── <span class="d">hyper-doc/</span>
+            └── <span class="h">SKILL.md</span></div>
+    <ul class="clean">
+      <li>Cada skill vive en su propia carpeta, con su <code>SKILL.md</code>.</li>
+      <li>El asistente lee la descripción de cada skill y la activa cuando tu tarea coincide. No tienes que invocarla a mano.</li>
+      <li>Instala solo las que te sirvan; no estorban las demás.</li>
+    </ul>
+    <div class="callout note"><p class="lbl">Más detalle</p><p>Para conocer cada skill (qué resuelve, cuándo se activa, ejemplos), abre el <a href="skills-catalogo.html" target="_blank" rel="noopener">Catálogo de Skills</a>.</p></div>
+
+    <h3 class="sub">Lista para empezar</h3>
+    <ul class="clean">
+      <li>Tengo VS Code y Node.js instalados.</li>
+      <li>Sé abrir la terminal y entrar a mi carpeta con <code>cd</code>.</li>
+      <li>Mis llaves están en <code>.env</code> y <code>.env</code> está en <code>.gitignore</code>.</li>
+      <li>Hago <code>git commit</code> seguido para no perder mi avance.</li>
+      <li>Copié las skills que necesito a la carpeta de mi asistente.</li>
+    </ul>
+    <div class="callout tip"><p class="lbl">Para el hackathon</p><p>Haz un <code>git commit</code> cada vez que algo funcione, no al final. Si algo se rompe a media demo, vuelves al último punto que servía en segundos — y te ahorras el infarto.</p></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><svg class="logo" style="height:20px" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg></div>
+    <p>Primeros Pasos · Hackathon Hyperdigital × Google · 27 de junio de 2026</p>
+    <p>¿Atorado? Busca a un mentor con gafete de Hyperdigital.</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var code=btn.closest('.codeblock').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(function(){
+        var t=btn.textContent;btn.textContent='Copiado';btn.classList.add('ok');
+        setTimeout(function(){btn.textContent=t;btn.classList.remove('ok');},1500);
+      });
+    });
+  });
+  (function(){
+    var inp=document.getElementById('termIn'), out=document.getElementById('termOut'); if(!inp) return;
+    var cwd='mi-proyecto';
+    function print(html){var d=document.createElement('div');d.className='ln';d.innerHTML=html;out.appendChild(d);out.scrollTop=out.scrollHeight;}
+    var R={
+      'ls':'src   node_modules   package.json   .env   .gitignore',
+      'dir':'src   node_modules   package.json   .env   .gitignore',
+      'npm install':'added 142 packages in 3s\n✓ listo: las piezas del proyecto quedaron en node_modules/',
+      'npm run dev':'VITE listo → http://localhost:5173  (abre esa dirección en tu navegador)',
+      'git status':'On branch main\nChanges not staged for commit:\n  modified: src/App.tsx\nusa "git add ." para prepararlos',
+      'git add .':'(cambios preparados) ahora puedes hacer git commit',
+      'git push':'Everything up-to-date ✓',
+      'help':'Comandos de práctica: ls · cd <carpeta> · npm install · npm run dev · git status · git add . · git commit -m "nota" · clear',
+      'clear':'__clear__'
+    };
+    inp.addEventListener('keydown',function(e){
+      if(e.key!=='Enter') return;
+      var cmd=inp.value.trim(); inp.value='';
+      if(!cmd) return;
+      print('<span class="cmd">'+cwd+' $ </span>'+cmd.replace(/</g,'&lt;'));
+      var res;
+      if(cmd==='clear'){out.innerHTML='';return;}
+      if(/^cd\s+/.test(cmd)){var f=cmd.slice(3).trim().replace(/\/$/,'');cwd=f==='..'?'mi-proyecto':(cwd+'/'+f);print('(entraste a '+cwd+')');return;}
+      if(/^git commit/.test(cmd)){print('[main 7f3a2c1] punto guardado ✓');return;}
+      res=R[cmd];
+      if(res===undefined){print('comando no reconocido. Escribe <span class="cmd">help</span> para ver la lista.');}
+      else if(res!=='__clear__'){print(res);}
+    });
+  })();
+</script>

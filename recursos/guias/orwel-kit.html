@@ -1,0 +1,505 @@
+<title>Orwel · Kit del Hackathon — Hyperdigital × Google</title>
+<meta name="description" content="Cómo instalar y usar el SDK de Orwel para medir visitantes, eventos y conversiones en tu proyecto del hackathon. Desde cero, paso a paso.">
+
+<style>
+  :root{
+    --ink:#1c1d28;            /* texto principal */
+    --ink-strong:#170175;     /* títulos / marca (índigo Hyper) */
+    --muted:#5c5f72;          /* texto secundario */
+    --accent:#3F00FF;         /* violeta Hyper (chevrons / acento) */
+    --accent-weak:#efeaff;    /* tinte de acento */
+    --line:#e9e7f3;           /* bordes */
+    --line-strong:#d8d4ec;
+    --bg:#ffffff;
+    --bg-alt:#f7f5fd;         /* secciones alternas (lavanda sutil) */
+    --code-bg:#0e1018;        /* bloques de código */
+    --ok:#0a7d4d; --ok-bg:#eef8f2; --ok-line:#bfe6d2;
+    --warn:#9a6300; --warn-bg:#fdf6e9; --warn-line:#f0dcad;
+    --danger:#c0392b; --danger-bg:#fdf0ee; --danger-line:#f2cdc7;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,monospace;
+    --maxw:1040px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:2px}
+  h1,h2,h3,h4{color:var(--ink-strong);line-height:1.25;letter-spacing:-.018em;font-weight:700}
+  p{margin:0 0 16px}
+  code{font-family:var(--mono);font-size:.875em}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+  /* top bar */
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:14px;height:60px;max-width:1180px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.02em;color:var(--ink-strong)}
+  .brand .logo{height:18px;width:auto;display:block}
+  .brand .sep{color:var(--line-strong);font-weight:400}
+  .brand .doc{color:var(--muted);font-weight:600;font-size:15px}
+  nav.top .links{margin-left:auto;display:flex;gap:22px;font-size:14.5px;font-weight:500}
+  nav.top .links a{color:var(--muted)}
+  nav.top .links a:hover{color:var(--ink-strong);text-decoration:none}
+  @media(max-width:720px){nav.top .links{display:none}}
+
+  /* hero */
+  header.hero{border-bottom:1px solid var(--line);background:var(--bg)}
+  header.hero .wrap{padding-top:64px;padding-bottom:52px}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  header.hero h1{font-size:clamp(34px,5vw,50px);margin:0 0 18px;max-width:18ch}
+  header.hero .lead{font-size:clamp(18px,2.2vw,21px);color:var(--muted);max-width:62ch;margin:0 0 28px}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px}
+  .meta-row b{color:var(--ink-strong);font-weight:600}
+  .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:30px}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15.5px;padding:12px 20px;border-radius:9px;border:1px solid transparent;cursor:pointer;transition:.14s}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.primary:hover{background:#3a08d6;text-decoration:none}
+  .btn.ghost{background:#fff;color:var(--ink-strong);border-color:var(--line-strong)}
+  .btn.ghost:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+  /* sections */
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  section:nth-of-type(even){background:var(--bg-alt)}
+  section h2{font-size:clamp(25px,3vw,32px);margin:0 0 10px}
+  section .lede{color:var(--muted);font-size:18px;max-width:66ch;margin:0 0 30px}
+  .seclabel{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  h3.sub{font-size:20px;margin:34px 0 10px}
+  h4.sub{font-size:16.5px;margin:26px 0 8px;color:var(--ink-strong)}
+
+  /* callouts */
+  .callout{border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:16px 20px;margin:20px 0;background:#fff}
+  .callout .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 5px}
+  .callout p{margin:0;color:var(--ink)}
+  .callout p+p{margin-top:8px}
+  .callout.simple{border-left-color:var(--accent);background:var(--accent-weak)}
+  .callout.simple .lbl{color:var(--accent)}
+  .callout.note{border-left-color:var(--accent)}.callout.note .lbl{color:var(--accent)}
+  .callout.tip{border-left-color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line)}.callout.tip .lbl{color:var(--ok)}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-bg);border-color:var(--warn-line)}.callout.warn .lbl{color:var(--warn)}
+  .callout.danger{border-left-color:var(--danger);background:var(--danger-bg);border-color:var(--danger-line)}.callout.danger .lbl{color:var(--danger)}
+
+  /* code */
+  .codeblock{margin:18px 0;border-radius:10px;overflow:hidden;border:1px solid #20222e;background:var(--code-bg)}
+  .codeblock .bar{display:flex;align-items:center;background:#171a24;color:#9aa0b4;font-size:12.5px;padding:9px 14px;font-family:var(--mono);border-bottom:1px solid #20222e}
+  .codeblock .bar .fn{font-weight:600}
+  .codeblock .copy{margin-left:auto;background:transparent;color:#9aa0b4;border:1px solid #2c2f3d;border-radius:6px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .codeblock .copy:hover{color:#fff;border-color:#454a5e}
+  .codeblock .copy.ok{color:#5fd9a0;border-color:#2f6b50}
+  .codeblock pre{margin:0;padding:16px 16px;overflow-x:auto;font-size:13.5px;line-height:1.7}
+  .codeblock code{font-family:var(--mono);color:#e6e8f0;font-size:13.5px}
+  .tok-c{color:#6b7186}.tok-k{color:#b79cff}.tok-s{color:#7fdbb0}.tok-f{color:#9cc7ff}.tok-d{color:#f0a878}
+
+  /* tables */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:20px 0;background:#fff}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:15px}
+  th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;background:var(--bg-alt)}
+  td code{background:var(--accent-weak);color:var(--accent);padding:2px 6px;border-radius:5px}
+  tr:last-child td{border-bottom:none}
+
+  /* feature list (no emojis) */
+  .features{display:flex;flex-wrap:wrap;gap:14px;margin:24px 0}
+  .feature{flex:1 1 300px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px}
+  .feature h3{font-size:16px;margin:0 0 6px;display:flex;align-items:center;gap:9px}
+  .feature h3::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--accent);flex:none}
+  .feature p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+  .diagram{border:1px solid var(--line);border-radius:12px;background:#fff;padding:20px;margin:24px 0;overflow-x:auto}
+  .diagram svg{display:block;width:100%;min-width:560px;height:auto;font-family:var(--sans)}
+  .figcap{font-size:13.5px;color:var(--muted);text-align:center;margin:10px 0 0}
+  /* account spotlight */
+  .acct{display:grid;grid-template-columns:1.3fr 1fr;gap:0;border:1px solid var(--accent);border-radius:16px;overflow:hidden;margin:22px 0;box-shadow:0 14px 40px -22px rgba(63,0,255,.55)}
+  @media(max-width:720px){.acct{grid-template-columns:1fr}}
+  .acct .left{padding:28px 30px}
+  .acct .left h3{font-size:22px;margin-bottom:6px}
+  .acct .left p{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .acct .right{background:linear-gradient(160deg,#2a07b8,#170175);color:#fff;padding:28px 30px;display:flex;flex-direction:column;justify-content:center}
+  .acct .right .big{font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#c4b5ff;margin-bottom:10px}
+  .acct .right .price{font-size:30px;font-weight:800;line-height:1.1;margin-bottom:6px}
+  .acct .right .note{font-size:13.5px;color:#d9d2ff;margin-bottom:20px}
+  .acct .right .btn{background:#fff;color:var(--accent);border-color:#fff;justify-content:center;font-size:16px;padding:13px 20px}
+  .acct .right .btn:hover{background:#f0edff}
+  .acct ol{counter-reset:a;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+  .acct ol li{counter-increment:a;display:flex;gap:13px;align-items:flex-start}
+  .acct ol li::before{content:counter(a);flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent-weak);color:var(--accent);border:1px solid var(--accent);display:grid;place-items:center;font-weight:800;font-size:14px}
+  .acct ol li b{color:var(--ink-strong);display:block;font-size:15px}
+  .acct ol li span{color:var(--muted);font-size:13.5px}
+  .keypill{display:inline-flex;align-items:center;gap:7px;background:var(--accent-weak);color:var(--accent);font-family:var(--mono);font-size:13px;font-weight:600;padding:4px 10px;border-radius:7px;margin-top:6px}
+
+  /* steps */
+  .steps{counter-reset:s;list-style:none;padding:0;margin:24px 0;display:flex;flex-direction:column;gap:2px}
+  .steps>li{position:relative;padding:0 0 26px 46px;counter-increment:s}
+  .steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--accent-weak);color:var(--accent);border:1px solid var(--accent);display:grid;place-items:center;font-weight:700;font-size:14px}
+  .steps>li::after{content:"";position:absolute;left:14.5px;top:30px;bottom:0;width:1px;background:var(--line)}
+  .steps>li:last-child::after{display:none}
+  .steps h4{margin:4px 0 6px;font-size:17px}
+  .steps p{margin:0 0 6px;color:var(--muted);font-size:15.5px}
+
+  /* idea cards */
+  .ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:22px 0}
+  .idea{border:1px solid var(--line);border-radius:10px;padding:18px;background:#fff}
+  .idea .tag{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-bottom:8px;display:inline-block}
+  .idea h3{font-size:16px;margin:0 0 5px}
+  .idea p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+
+  /* widget (interactivo) */
+  .widget{background:#fff;border:1px solid var(--line-strong);border-radius:12px;padding:22px;margin:24px 0}
+  .widget .wlabel{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  .widget>p{color:var(--muted);font-size:15px;margin:0 0 14px}
+  .wbtns{display:flex;flex-wrap:wrap;gap:9px;margin:4px 0 0}
+  .wbtn{border:1px solid var(--line-strong);background:#fff;color:var(--ink-strong);border-radius:8px;padding:9px 15px;font-weight:600;font-size:14px;cursor:pointer;font-family:var(--sans);transition:.12s}
+  .wbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .wbtn.alt{color:var(--muted)}
+  .wlog{background:var(--code-bg);border-radius:9px;padding:13px;font-family:var(--mono);font-size:12.5px;color:#e6e8f0;max-height:260px;overflow:auto;margin-top:14px}
+  .wlog .e{padding:8px 10px;border-radius:6px;margin-bottom:7px;background:rgba(255,255,255,.04);border-left:2px solid var(--accent);white-space:pre-wrap;word-break:break-word}
+  .wlog .ph{color:#6b7186;border-left-color:#3a3f52}
+  .widget textarea,.widget input[type=text]{width:100%;border:1px solid var(--line-strong);border-radius:9px;padding:12px;font-family:var(--mono);font-size:14px;color:var(--ink);background:#fff;resize:vertical;margin-top:4px}
+  .widget textarea:focus,.widget input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .wstats{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+  .wstat{flex:1;min-width:96px;background:var(--bg-alt);border:1px solid var(--line);border-radius:9px;padding:11px 12px;text-align:center}
+  .wstat b{display:block;font-size:21px;font-variant-numeric:tabular-nums;color:var(--ink-strong);line-height:1.1}
+  .wstat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .wbar{height:16px;background:var(--accent-weak);border-radius:8px;overflow:hidden;margin:8px 0}
+  .wbar .wfill{height:100%;width:0;background:var(--ok);transition:width .25s,background .25s;border-radius:8px}
+  .wmsg{font-size:14px;margin-top:10px;font-weight:600;min-height:1.2em}
+  .trait{margin:11px 0}
+  .trait .tl{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:5px;color:var(--ink-strong)}
+  .trait .tl span{color:var(--muted);font-variant-numeric:tabular-nums}
+  .trait .tb{height:13px;background:var(--accent-weak);border-radius:7px;overflow:hidden}
+  .trait .tf{height:100%;width:30%;background:var(--accent);border-radius:7px;transition:width .4s}
+
+  ul.clean{list-style:none;padding:0;margin:18px 0;display:flex;flex-direction:column;gap:11px}
+  ul.clean li{padding-left:24px;position:relative;color:var(--ink)}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+  footer{padding:40px 0;text-align:center;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line)}
+  footer a{color:var(--accent)}
+  footer .brand{justify-content:center;margin-bottom:8px}
+  .anchor{scroll-margin-top:76px}
+</style>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand"><svg class="logo" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg><span class="sep">/</span><span class="doc">Orwel Kit</span></span>
+    <span class="links">
+      <a href="inico.html" target="_blank" rel="noopener">Hub</a>
+      <a href="#cuenta">Crear cuenta</a>
+      <a href="#empezar">Instalación</a>
+      <a href="#metodos">Métodos</a>
+      <a href="#playground">Playground</a>
+      <a href="#api">API</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Hackathon Hyperdigital × Google</p>
+    <h1>Mide lo que pasa en tu sitio con Orwel</h1>
+    <p class="lead">Orwel es nuestra herramienta de analítica. En menos de cinco minutos sabrás quién entra a tu proyecto, qué hace dentro y cuándo alguien se vuelve cliente. Aquí está todo para usarla hoy.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="https://orwel.io" target="_blank" rel="noopener">Crear cuenta y obtener tu llave</a>
+      <a class="btn ghost" href="#empezar">Ver el inicio rápido</a>
+    </div>
+    <div class="meta-row">
+      <span>Paquete <b>orwel</b> · v1.7</span>
+      <span>Listo para <b>producción</b></span>
+      <span>React · Next · Vue · Svelte · Astro · HTML</span>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="que-es" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Qué es Orwel</p>
+    <h2>Una herramienta que escucha tu producto</h2>
+    <div class="callout simple">
+      <p class="lbl">En palabras simples</p>
+      <p>Imagina que tu página web es una tienda. Orwel es como un ayudante invisible que anota cuánta gente entra, qué miran, en qué botón hacen clic y quién deja sus datos para comprar. Tú no tienes que estar mirando: Orwel lo apunta todo y te lo muestra ordenado.</p>
+    </div>
+    <p class="lede">Para quien construye: Orwel es un SDK de analítica de front-end (paquete npm <code>orwel</code>) más una API. Identifica visitantes, detecta eventos automáticamente, encola y reenvía sin perder datos, y suma inteligencia de leads con IA en el panel.</p>
+    <div class="features">
+      <div class="feature"><h3>Visitantes</h3><p>Sabe quién llega, de dónde viene y si ya había estado antes, sin pedir login.</p></div>
+      <div class="feature"><h3>Eventos</h3><p>Clics, vistas de página, scroll y formularios. Manuales o detectados solos.</p></div>
+      <div class="feature"><h3>Conversiones</h3><p>Cuando alguien deja su correo o pide una demo, queda registrado como lead.</p></div>
+      <div class="feature"><h3>Inteligencia</h3><p>El panel resume y califica cada lead con IA, y enriquece datos de la empresa.</p></div>
+      <div class="feature"><h3>Personalidades</h3><p>Deduce rasgos de cada visitante por su comportamiento. Úsalos para personalizar, segmentar o priorizar.</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 860 130" role="img" aria-label="Flujo de Orwel: tu sitio con el SDK envía eventos a Orwel, y tu backend los lee con la API REST">
+        <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3F00FF"/></marker></defs>
+        <rect x="8" y="34" width="206" height="62" rx="11" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="111" y="61" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">Tu sitio + SDK</text>
+        <text x="111" y="80" text-anchor="middle" font-size="11" fill="#5c5f72">track · identify · conversion</text>
+        <rect x="312" y="34" width="236" height="62" rx="11" fill="#efeaff" stroke="#3F00FF" stroke-width="1.5"/>
+        <text x="430" y="61" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">Orwel</text>
+        <text x="430" y="80" text-anchor="middle" font-size="11" fill="#5c5f72">API · panel · IA · personalidades</text>
+        <rect x="646" y="34" width="206" height="62" rx="11" fill="#fff" stroke="#d8d4ec" stroke-width="1.5"/>
+        <text x="749" y="61" text-anchor="middle" font-size="14.5" font-weight="700" fill="#170175">Tu backend</text>
+        <text x="749" y="80" text-anchor="middle" font-size="11" fill="#5c5f72">lee vía API REST</text>
+        <line x1="214" y1="65" x2="308" y2="65" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="261" y="56" text-anchor="middle" font-size="11" fill="#5c5f72">envía eventos</text>
+        <line x1="548" y1="65" x2="642" y2="65" stroke="#3F00FF" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="595" y="56" text-anchor="middle" font-size="11" fill="#5c5f72">API REST</text>
+      </svg>
+      <p class="figcap">El SDK manda datos a Orwel; Orwel los procesa y los muestra; tú puedes leerlos de vuelta con la API REST para construir lo tuyo.</p>
+    </div>
+  </div>
+</section>
+
+<section id="cuenta" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Paso 0 · Tu cuenta</p>
+    <h2>Crea tu cuenta y obtén tu API key</h2>
+    <p class="lede">Es lo primero y toma menos de un minuto. Es <b>gratis</b> y <b>self-serve</b>: cualquiera se registra y obtiene su propia llave al instante — cada equipo puede tener la suya, sin pedir permiso a nadie.</p>
+    <div class="acct">
+      <div class="left">
+        <h3>Tres pasos para tener tu llave</h3>
+        <p>La API key conecta tu proyecto con Orwel. Sin ella, el SDK no envía nada.</p>
+        <ol>
+          <li><div><b>Entra a orwel.io y regístrate</b><span>Con tu correo. No necesitas tarjeta.</span></div></li>
+          <li><div><b>Crea tu workspace</b><span>Es el espacio de tu proyecto/equipo. Puedes crear varios.</span></div></li>
+          <li><div><b>Copia tu API key</b><span>La encuentras en los ajustes del workspace. Empieza con <code>orwel_</code>.<br><span class="keypill">orwel_a1b2c3d4e5f6g7h8…</span></span></div></li>
+        </ol>
+      </div>
+      <div class="right">
+        <div class="big">Gratis para el hackathon</div>
+        <div class="price">$0</div>
+        <div class="note">Self-serve · sin tarjeta · tu llave al instante</div>
+        <a class="btn" href="https://orwel.io" target="_blank" rel="noopener">Crear mi cuenta en orwel.io →</a>
+      </div>
+    </div>
+    <div class="callout warn">
+      <p class="lbl">Guárdala bien</p>
+      <p>Tu API key es como una contraseña. Cuando la uses en tu proyecto, ponla en un archivo <code>.env</code> (lo vemos en el siguiente paso), nunca directamente en el código que subes a GitHub.</p>
+    </div>
+    <p class="muted" style="font-size:14px">¿Ya la tienes? Sigue al inicio rápido para instalarla en tu proyecto. 👇</p>
+  </div>
+</section>
+
+<section id="empezar" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Inicio rápido</p>
+    <h2>De cero a midiendo en cinco minutos</h2>
+    <div class="callout note">
+      <p class="lbl">¿Aún no tienes tu llave?</p>
+      <p>Vuelve al <a href="#cuenta">Paso 0</a> y créala en <a href="https://orwel.io" target="_blank" rel="noopener">orwel.io</a> (gratis, un minuto). La necesitas para que el SDK envíe datos.</p>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <h4>Instala el paquete</h4>
+        <p>Si tu proyecto usa Node (React, Next, Vue, Svelte, Astro…):</p>
+        <div class="codeblock"><div class="bar"><span class="fn">Terminal</span><button class="copy" data-copy>Copiar</button></div><pre><code>npm install orwel</code></pre></div>
+        <p>¿Solo tienes un HTML simple, sin Node? Usa el CDN antes de cerrar <code>&lt;/body&gt;</code>:</p>
+        <div class="codeblock"><div class="bar"><span class="fn">index.html</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">&lt;script</span> <span class="tok-f">src</span>=<span class="tok-s">"https://cdn.orwel.io/orwel.js"</span><span class="tok-k">&gt;&lt;/script&gt;</span>
+<span class="tok-k">&lt;script&gt;</span>
+  orwel.<span class="tok-f">init</span>({ <span class="tok-f">apiKey</span>: <span class="tok-s">'orwel_tu_llave_aqui'</span> });
+  orwel.<span class="tok-f">track</span>(<span class="tok-s">'page_view'</span>, { <span class="tok-f">path</span>: location.pathname });
+<span class="tok-k">&lt;/script&gt;</span></code></pre></div>
+      </li>
+      <li>
+        <h4>Guarda tu llave de forma segura</h4>
+        <p>Nunca escribas la llave directamente en el código que subes a GitHub. Ponla en un archivo <code>.env</code> (y agrega <code>.env</code> a tu <code>.gitignore</code>). El nombre de la variable cambia según el framework:</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Framework</th><th>Variable en tu <code>.env</code></th></tr></thead>
+          <tbody>
+            <tr><td>SvelteKit / Astro</td><td><code>PUBLIC_ORWEL_KEY=orwel_xxx</code></td></tr>
+            <tr><td>Next.js</td><td><code>NEXT_PUBLIC_ORWEL_KEY=orwel_xxx</code></td></tr>
+            <tr><td>Vite (React / Vue)</td><td><code>VITE_ORWEL_KEY=orwel_xxx</code></td></tr>
+            <tr><td>Create React App</td><td><code>REACT_APP_ORWEL_KEY=orwel_xxx</code></td></tr>
+            <tr><td>Nuxt 3</td><td><code>NUXT_PUBLIC_ORWEL_KEY=orwel_xxx</code></td></tr>
+          </tbody>
+        </table></div>
+      </li>
+      <li>
+        <h4>Inicializa una sola vez</h4>
+        <p>Crea un módulo que lea la llave y arranque Orwel. Ejemplo para React + Vite:</p>
+        <div class="codeblock"><div class="bar"><span class="fn">src/lib/orwel.ts</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">import</span> { orwel } <span class="tok-k">from</span> <span class="tok-s">'orwel'</span>;
+
+<span class="tok-k">export function</span> <span class="tok-f">initOrwel</span>() {
+  <span class="tok-k">const</span> apiKey = import.meta.env.<span class="tok-d">VITE_ORWEL_KEY</span>;
+  <span class="tok-k">if</span> (!apiKey) {
+    console.<span class="tok-f">warn</span>(<span class="tok-s">'Falta VITE_ORWEL_KEY — Orwel no se inicializará.'</span>);
+    <span class="tok-k">return</span>;
+  }
+  orwel.<span class="tok-f">init</span>({ apiKey, <span class="tok-f">autoMonitor</span>: <span class="tok-k">true</span> });
+}
+
+<span class="tok-k">export</span> { orwel };</code></pre></div>
+        <p>Llama <code>initOrwel()</code> una vez al arrancar la app (en <code>main.tsx</code> o en el layout raíz). Debe correr en el navegador, no en el servidor.</p>
+      </li>
+    </ol>
+    <div class="callout tip">
+      <p class="lbl">Listo</p>
+      <p>Abre tu sitio, navega un poco y verás los eventos llegar en el panel de <a href="https://orwel.io" target="_blank" rel="noopener">orwel.io</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section id="metodos" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Cómo usarlo</p>
+    <h2>Los siete comandos que necesitas</h2>
+    <p class="lede">Importa el mismo <code>orwel</code> en cualquier parte de tu app y llama estos métodos. Nunca vuelvas a hacer <code>init</code>.</p>
+
+    <h3 class="sub">track — registrar un evento</h3>
+    <div class="codeblock"><div class="bar"><span class="fn">cualquier componente</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>orwel.<span class="tok-f">track</span>(<span class="tok-s">'button_click'</span>, { <span class="tok-f">button_id</span>: <span class="tok-s">'comprar'</span> });</code></pre></div>
+    <p style="color:var(--muted);font-size:15px">El nombre del evento va en <code>snake_case</code>: minúsculas, números y guion bajo, máximo 50 caracteres.</p>
+
+    <h3 class="sub">identify — decir quién es el visitante</h3>
+    <div class="codeblock"><div class="bar"><span class="fn">al conocer al usuario</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code>orwel.<span class="tok-f">identify</span>({ <span class="tok-f">email</span>: <span class="tok-s">'ana@empresa.com'</span>, <span class="tok-f">plan</span>: <span class="tok-s">'pro'</span> });</code></pre></div>
+
+    <h3 class="sub">conversion — capturar un lead</h3>
+    <div class="codeblock"><div class="bar"><span class="fn">en tu handler de envío</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-c">// Desde v1.6 conversion es asíncrono: usa await</span>
+<span class="tok-k">await</span> orwel.<span class="tok-f">conversion</span>(<span class="tok-s">'demo_request'</span>, {
+  <span class="tok-f">email</span>: <span class="tok-s">'ana@empresa.com'</span>,
+  <span class="tok-f">source</span>: <span class="tok-s">'landing_page'</span>
+});</code></pre></div>
+    <div class="callout warn">
+      <p class="lbl">Importante</p>
+      <p>El correo es obligatorio para leads. Si la conversión no trae <code>email</code> (aquí o vía un <code>identify</code> previo), el panel la registra pero no envía la notificación.</p>
+    </div>
+
+    <h3 class="sub">Los otros cuatro</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Método</th><th>Para qué sirve</th></tr></thead>
+      <tbody>
+        <tr><td><code>orwel.session(props, final?)</code></td><td>Guardar estado de la sesión (página activa, valor del carrito). Pasa <code>true</code> para marcar el fin.</td></tr>
+        <tr><td><code>orwel.monitor(opts?)</code></td><td>Instrumentación pasiva: rendimiento, errores, consola y red. Sin argumentos, activa todo.</td></tr>
+        <tr><td><code>orwel.form(el, opts)</code></td><td>Observa un formulario (foco, escritura, envío, abandono). No lo combines con un <code>conversion</code> manual en el mismo form.</td></tr>
+        <tr><td><code>await orwel.flush()</code></td><td>Fuerza el envío de la cola. Rara vez necesario: se envía solo al cerrar la página.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4 class="sub">Medir secciones sin escribir JavaScript</h4>
+    <p style="color:var(--muted);font-size:15px">Agrega <code>data-orwel-section="hero"</code> a cualquier elemento. Orwel mide solo cuánto se vio, qué porcentaje alcanzó y los clics dentro.</p>
+    <div class="codeblock"><div class="bar"><span class="fn">HTML</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">&lt;section</span> <span class="tok-f">data-orwel-section</span>=<span class="tok-s">"hero-principal"</span><span class="tok-k">&gt;</span> ... <span class="tok-k">&lt;/section&gt;</span></code></pre></div>
+  </div>
+</section>
+
+<section id="playground" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Interactivo</p>
+    <h2>Playground del SDK</h2>
+    <p class="lede">Pulsa un método y observa el evento que Orwel enviaría, con su estructura real. Es una demostración local — no manda datos a ningún servidor.</p>
+    <div class="widget">
+      <p class="wlabel">Dispara un evento</p>
+      <p>Cada botón simula una llamada del SDK y muestra el payload que viajaría a la API.</p>
+      <div class="wbtns">
+        <button class="wbtn" id="pbTrack">orwel.track()</button>
+        <button class="wbtn" id="pbId">orwel.identify()</button>
+        <button class="wbtn" id="pbConv">orwel.conversion()</button>
+        <button class="wbtn alt" id="pbClear">limpiar</button>
+      </div>
+      <div class="wlog" id="pbLog"><div class="e ph">Los eventos aparecerán aquí…</div></div>
+    </div>
+    <div class="callout tip">
+      <p class="lbl">Para el hackathon</p>
+      <p>Dispara un <code>conversion</code> real durante tu demo y muéstralo llegando al panel en vivo. Ver el dato aparecer en tiempo real vale más que diez diapositivas explicando lo que "haría".</p>
+    </div>
+  </div>
+</section>
+
+<section id="api" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Para builders avanzados</p>
+    <h2>API REST: construye sobre tus datos</h2>
+    <div class="callout note">
+      <p class="lbl">Idea</p>
+      <p>El SDK <em>manda</em> datos. La API te deja <em>leerlos</em>: puedes construir tu propio dashboard, un bot, o conectar Orwel con otra herramienta. Aquí es donde un proyecto de hackathon se vuelve interesante.</p>
+    </div>
+    <p class="lede">Base: <code>https://api.orwel.io</code> · Autenticación: header <code>Authorization: Bearer &lt;tu_api_key&gt;</code></p>
+    <div class="codeblock"><div class="bar"><span class="fn">Traer tus últimos leads</span><button class="copy" data-copy>Copiar</button></div>
+<pre><code><span class="tok-k">const</span> res = <span class="tok-k">await</span> <span class="tok-f">fetch</span>(<span class="tok-s">'https://api.orwel.io/api/v1/leads?limit=20'</span>, {
+  <span class="tok-f">headers</span>: { <span class="tok-d">Authorization</span>: <span class="tok-s">`Bearer ${API_KEY}`</span> }
+});
+<span class="tok-k">const</span> { data, pagination } = <span class="tok-k">await</span> res.<span class="tok-f">json</span>();</code></pre></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Endpoint</th><th>Qué devuelve</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET /api/v1/leads</code></td><td>Lista de leads, con resumen y score de IA. También <code>POST</code> para crear.</td></tr>
+        <tr><td><code>GET /api/v1/identities</code></td><td>Visitantes identificados. <code>/:id/activity</code> da su recorrido; <code>/:id/personalities</code> sus rasgos.</td></tr>
+        <tr><td><code>GET /api/v1/companies</code></td><td>Empresas enriquecidas detrás de tus leads.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout note">
+      <p class="lbl">Personalidades</p>
+      <p>Orwel infiere rasgos de cada visitante a partir de cómo se comporta. Pídelos en <code>GET /api/v1/identities/:id/personalities</code> y úsalos para adaptar el mensaje, mostrar distinto contenido o priorizar a quién contactar primero. Ideal para un proyecto que se sienta inteligente.</p>
+    </div>
+    <div class="callout warn">
+      <p class="lbl">Seguridad</p>
+      <p>La <code>API_KEY</code> de servidor es secreta. Las llamadas de lectura a la API hazlas desde tu backend, no desde el navegador.</p>
+    </div>
+  </div>
+</section>
+
+<section id="ideas" class="anchor">
+  <div class="wrap">
+    <p class="seclabel">Inspiración</p>
+    <h2>¿Qué puedes construir con Orwel?</h2>
+    <p class="lede">Distintos niveles, para que todos en el equipo tengan algo que hacer.</p>
+    <div class="ideas">
+      <div class="idea"><span class="tag">Principiante</span><h3>Landing que escucha</h3><p>Una página simple con un formulario. Mide visitas, clics y captura el lead con <code>conversion</code>.</p></div>
+      <div class="idea"><span class="tag">Intermedio</span><h3>Embudo visual</h3><p>Mide tres o cuatro pasos de un flujo con <code>track</code> y dibuja dónde se cae la gente.</p></div>
+      <div class="idea"><span class="tag">Avanzado</span><h3>Co-piloto de leads</h3><p>Usa la API de leads e identidades para un panel o bot que responda “¿quién es mi mejor lead de hoy?”.</p></div>
+      <div class="idea"><span class="tag">Creativo</span><h3>Mapa de atención</h3><p>Pon <code>data-orwel-section</code> en cada bloque y visualiza qué partes de la página se ven.</p></div>
+      <div class="idea"><span class="tag">Intermedio</span><h3>Experiencia que se adapta</h3><p>Lee los rasgos del visitante con la API de <code>personalities</code> y cambia el mensaje o el CTA según su perfil.</p></div>
+    </div>
+
+    <h3 class="sub">Si algo falla</h3>
+    <ul class="clean">
+      <li>¿El <code>conversion</code> no llega? Asegúrate de hacer <code>await</code> antes de cambiar la pantalla que oculta el formulario.</li>
+      <li>¿La consola dice “key is not defined”? Tu variable de entorno no se está leyendo — revisa el nombre exacto del framework.</li>
+      <li>¿Nada aparece en el panel? Confirma que <code>init</code> corre en el navegador y que la llave empieza con <code>orwel_</code>.</li>
+      <li>Para instalación asistida, usa la skill de Orwel en tu asistente de IA (Claude Code, Gemini CLI, Cursor…), incluida en el pack de Hyper Skills.</li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand" style="display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink-strong)"><svg class="logo" style="height:20px;width:auto" viewBox="0 0 235 25" fill="none" role="img" aria-label="Hyper"><path d="M196.208 0H186.786L197.492 12.4993L186.786 25H196.208L206.914 12.4993L196.208 0Z" fill="#3F00FF"/><path d="M209.847 0H200.425L211.132 12.4993L200.425 25H209.847L220.554 12.4993L209.847 0Z" fill="#3F00FF"/><path d="M223.361 0H213.939L224.645 12.4993L213.939 25H223.361L234.069 12.4993L223.361 0Z" fill="#3F00FF"/><path d="M5.81316 0.0423889H13.4084L11.4634 9.28368H28.7118L30.6582 0.0423889H38.2535L32.9784 24.9989H25.3451L27.4029 15.4572H10.1531L8.09528 24.9989H0.5L5.81316 0.0423889Z" fill="#170175"/><path d="M52.5837 16.3568L41.7698 0.0434875H51.461L57.6726 10.3708L68.2241 0.0434875H77.7278L60.217 16.3568L58.3467 25H50.7134L52.5837 16.3568Z" fill="#170175"/><path d="M81.5078 0.0421143H100.59C105.416 0.0421143 106.576 0.191628 107.997 0.977253C109.494 1.80094 110.243 3.22268 110.243 5.20577C110.243 7.18886 109.532 10.5556 108.634 13.1381C107.624 15.9449 105.603 17.8899 103.096 18.4513C101.563 18.7503 100.178 18.8631 97.2597 18.8631H85.0621L83.7518 25H76.1932L81.5064 0.0434748L81.5078 0.0421143ZM97.3725 12.801C99.5799 12.801 100.478 12.5387 101.189 11.7164C101.787 10.9675 102.237 9.47098 102.237 8.124C102.237 7.22556 101.938 6.70226 101.264 6.40323C100.666 6.1409 100.365 6.1042 98.7942 6.1042H87.7561L86.3343 12.801H97.3725Z" fill="#170175"/><path d="M144.593 0.0421143L143.395 5.69236H123.265L122.33 9.99563H141.376L140.328 14.9337H121.282L120.347 19.3484H140.776L139.579 24.9986H111.666L116.979 0.0421143H144.593Z" fill="#170175"/><path d="M150.507 0.0421279H172.022C178.644 0.0421279 180.515 1.12678 180.515 4.94345C180.515 7.89974 179.692 11.3046 178.607 12.9886C177.634 14.4484 176.624 15.0465 174.379 15.5331C175.501 15.6826 175.838 15.7206 176.362 15.9082C177.147 16.2072 177.634 16.8814 177.634 17.7785C177.634 18.3398 177.596 18.6756 177.147 21.0705L176.287 24.9986H168.617L169.253 21.8928C169.366 21.4062 169.441 20.9196 169.441 20.5459C169.441 19.7222 169.104 19.1989 168.393 18.9365C167.981 18.787 167.233 18.7123 165.773 18.7123H154.099L152.752 24.9973H145.194L150.507 0.0407715V0.0421279ZM167.27 12.6135C169.477 12.6135 170.338 12.464 171.087 11.9774C171.685 11.5655 171.947 11.0422 172.246 9.80672C172.396 9.05915 172.508 8.31022 172.508 7.89838C172.508 7.11276 172.135 6.58946 171.386 6.36383C170.788 6.17626 170.562 6.17626 168.916 6.17626H156.755L155.37 12.6121H167.269L167.27 12.6135Z" fill="#170175"/></svg></div>
+    <p>Orwel Kit · Hackathon Hyperdigital × Google · 27 de junio de 2026</p>
+    <p><a href="https://orwel.io" target="_blank" rel="noopener">orwel.io</a> — crea tu cuenta y obtén tu API key gratis</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var code=btn.closest('.codeblock').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(function(){
+        var t=btn.textContent;btn.textContent='Copiado';btn.classList.add('ok');
+        setTimeout(function(){btn.textContent=t;btn.classList.remove('ok');},1500);
+      });
+    });
+  });
+  (function(){
+    var log=document.getElementById('pbLog'); if(!log) return;
+    function h(s){var x=0;for(var i=0;i<s.length;i++){x=(x<<5)-x+s.charCodeAt(i)|0;}return Math.abs(x);}
+    var vid='vis_'+h(navigator.userAgent+location.host).toString(16).slice(0,8);
+    var n=0, cleared=true;
+    function add(type,obj){
+      if(cleared){log.innerHTML='';cleared=false;}
+      n++;
+      var when=new Date().toLocaleTimeString('es-MX');
+      var e=document.createElement('div'); e.className='e';
+      e.textContent='#'+n+'  orwel.'+type+'()   ·   '+when+'\n'+JSON.stringify(obj,null,2);
+      log.insertBefore(e,log.firstChild);
+    }
+    var btnT=document.getElementById('pbTrack'),btnI=document.getElementById('pbId'),btnC=document.getElementById('pbConv'),btnX=document.getElementById('pbClear');
+    btnT.onclick=function(){add('track',{type:'track',code:'button_click',properties:{button_id:'cta_demo'},visitor:vid});};
+    btnI.onclick=function(){add('identify',{type:'identify',traits:{email:'ana@empresa.com',plan:'pro'},visitor:vid});};
+    btnC.onclick=function(){add('conversion',{type:'conversion',code:'demo_request',properties:{email:'ana@empresa.com',source:'playground'},visitor:vid});};
+    btnX.onclick=function(){log.innerHTML='<div class="e ph">Los eventos aparecerán aquí…</div>';n=0;cleared=true;};
+  })();
+</script>
