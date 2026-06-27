@@ -92,7 +92,14 @@ Para persistir datos de verdad: copia `.env.example` a `.env` y llena Supabase/I
 3. **Construir el demo** entregable.
 4. **Llenar la sección "El reto"** en `README.md` con el problema elegido y la propuesta.
 
-## 7. Notas
+## 7. Colaboración
+
+- Trabajamos con **ramas + Pull Requests**; nadie empuja directo a `main`. Detalle en [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- Plantilla de PR en `.github/pull_request_template.md`.
+- **Colaboradores:** el owner (`jagu4r`) agrega a cada persona en https://github.com/jagu4r/hackathon-noreste/settings/access con rol **Write**. Pendiente: agregar a **Dante**.
+- Recomendado activar **branch protection** en `main` (exigir PR antes de fusionar): https://github.com/jagu4r/hackathon-noreste/settings/branches
+
+## 8. Notas
 
 - El material de `/recursos` es del kit del hackathon (Hyperdigital × Google), no contiene datos internos de Deacero.
 - Las guías HTML son autocontenidas: ábrelas con doble clic en el navegador.
