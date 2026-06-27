@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Último Recurso · Mapa de riesgos del Noreste</title>
+
+  <!-- Leaflet (mapa open source). Vía CDN: necesita internet para los tiles. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <style>
+    /* =====================================================================
+       Último Recurso — "el Waze de los riesgos ambientales".
+       Web colaborativa: mapa del Noreste con reportes en vivo.
+       Marca: rombo cian -> azul -> morado sobre fondo oscuro.
+       TODO Dante: este archivo es tuyo. Edita libremente colores, textos,
+       el catálogo de ciudades y los reportes semilla (busca "SEED").
+       ===================================================================== */
+    :root{
+      --from:#1FD3E0; --mid:#3B5BFF; --to:#6B2EFF;
+      --bg:#0b0d17; --panel:#131726; --panel-2:#1b2034;
+      --line:#262c44; --ink:#eef1fb; --muted:#9aa3c7;
+      --alta:#ff4d5e; --media:#ffb020; --baja:#23d6a6;
+      --grad:linear-gradient(135deg,var(--mid),var(--to));
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      background:var(--bg); color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+      display:grid; grid-template-rows:auto 1fr; height:100vh; overflow:hidden;
+    }
+    /* ---- Header ---- */
+    header{
+      display:flex; align-items:center; gap:14px; padding:12px 18px;
+      border-bottom:1px solid var(--line); background:rgba(19,23,38,.85); backdrop-filter:blur(8px); z-index:1000;
+    }
+    .brand{display:flex; align-items:center; gap:11px}
+    .diamond{width:26px; height:26px; border-radius:7px; background:var(--grad); transform:rotate(45deg);
+      box-shadow:0 0 18px rgba(91,46,255,.55)}
+    .brand h1{font-size:17px; margin:0; letter-spacing:-.02em}
+    .brand .tag{font-size:11.5px; color:var(--muted); margin-top:1px}
+    .live{display:flex; align-items:center; gap:7px; margin-left:6px; font-size:12px; font-weight:700;
+      color:var(--alta); text-transform:uppercase; letter-spacing:.08em}
+    .live .dot{width:9px; height:9px; border-radius:50%; background:var(--alta); box-shadow:0 0 0 0 rgba(255,77,94,.7);
+      animation:pulse 1.6s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,77,94,.6)}70%{box-shadow:0 0 0 10px rgba(255,77,94,0)}100%{box-shadow:0 0 0 0 rgba(255,77,94,0)}}
+    .stats{display:flex; gap:10px; margin-left:auto}
+    .stat{background:var(--panel-2); border:1px solid var(--line); border-radius:11px; padding:7px 14px; min-width:96px}
+    .stat .v{font-size:20px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums}
+    .stat .k{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:3px}
+
+    /* ---- Layout ---- */
+    .wrap{display:grid; grid-template-columns:1fr 340px; min-height:0}
+    @media(max-width:820px){ .wrap{grid-template-columns:1fr} aside{display:none} }
+    #map{height:100%; width:100%; background:#0b0d17}
+
+    aside{border-left:1px solid var(--line); background:var(--panel); display:flex; flex-direction:column; min-height:0}
+    .sec{padding:14px 16px; border-bottom:1px solid var(--line)}
+    .sec h2{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:0 0 10px}
+    .chips{display:flex; flex-wrap:wrap; gap:7px}
+    .chip{font-size:12.5px; font-weight:600; padding:6px 11px; border-radius:999px; border:1px solid var(--line);
+      background:var(--panel-2); color:var(--ink); cursor:pointer; user-select:none; transition:.12s}
+    .chip.off{opacity:.4}
+    .chip .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:middle}
+
+    /* ---- Feed en vivo ---- */
+    .feed{flex:1; overflow-y:auto; padding:8px 10px}
+    .card{background:var(--panel-2); border:1px solid var(--line); border-left:3px solid var(--mid);
+      border-radius:10px; padding:10px 12px; margin-bottom:9px; cursor:pointer; transition:.12s;
+      animation:slidein .45s cubic-bezier(.2,.8,.2,1)}
+    .card:hover{border-color:var(--mid); transform:translateX(-2px)}
+    .card.alta{border-left-color:var(--alta)} .card.media{border-left-color:var(--media)} .card.baja{border-left-color:var(--baja)}
+    @keyframes slidein{from{opacity:0; transform:translateY(-8px)}to{opacity:1; transform:none}}
+    .card .top{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:700}
+    .card .emoji{font-size:16px}
+    .card .desc{font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.45}
+    .card .foot{display:flex; align-items:center; gap:8px; margin-top:7px; font-size:11.5px; color:var(--muted)}
+    .badge{font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; padding:2px 7px; border-radius:6px}
+    .badge.alta{color:var(--alta); background:rgba(255,77,94,.13)}
+    .badge.media{color:var(--media); background:rgba(255,176,32,.13)}
+    .badge.baja{color:var(--baja); background:rgba(35,214,166,.13)}
+
+    /* ---- Botones / formulario reportar ---- */
+    .btn{display:inline-flex; align-items:center; justify-content:center; gap:7px; width:100%; font-weight:700; font-size:14px;
+      padding:11px 14px; border-radius:10px; border:none; background:var(--grad); color:#fff; cursor:pointer; transition:.12s}
+    .btn:hover{filter:brightness(1.1)} .btn:disabled{opacity:.5; cursor:default}
+    .btn.ghost{background:var(--panel-2); border:1px solid var(--line); color:var(--ink)}
+    .form{display:none; margin-top:11px}
+    .form.open{display:block}
+    .form label{display:block; font-size:12px; color:var(--muted); margin:9px 0 4px}
+    .form select,.form textarea{width:100%; background:var(--bg); border:1px solid var(--line); border-radius:9px;
+      color:var(--ink); padding:9px 11px; font-size:13.5px; font-family:inherit}
+    .form textarea{resize:none; height:62px}
+    .hint{font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.5}
+
+    /* ---- Pines del mapa ---- */
+    .pin{display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%;
+      font-size:17px; border:2.5px solid #fff; box-shadow:0 3px 12px rgba(0,0,0,.5)}
+    .pin.alta{background:var(--alta)} .pin.media{background:var(--media)} .pin.baja{background:var(--baja)}
+    .pin.drop{animation:drop .5s cubic-bezier(.2,.9,.3,1.3)}
+    @keyframes drop{0%{transform:translateY(-26px) scale(.4); opacity:0}100%{transform:none; opacity:1}}
+    .pin.alta::after{content:""; position:absolute; width:34px; height:34px; border-radius:50%;
+      box-shadow:0 0 0 0 rgba(255,77,94,.6); animation:pulse 1.8s infinite}
+
+    /* ---- Popup ---- */
+    .leaflet-popup-content-wrapper{background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:13px}
+    .leaflet-popup-tip{background:var(--panel); border:1px solid var(--line)}
+    .leaflet-popup-content{margin:13px 15px; width:228px !important}
+    .pop .ph{height:96px; border-radius:9px; margin-bottom:10px; display:flex; align-items:center; justify-content:center;
+      font-size:34px; background:linear-gradient(135deg,#1c2238,#2a2150)}
+    .pop img{width:100%; height:96px; object-fit:cover; border-radius:9px; margin-bottom:10px}
+    .pop h3{margin:0 0 3px; font-size:15px}
+    .pop .ia{font-size:12.5px; color:var(--muted); line-height:1.5; margin:6px 0 10px}
+    .pop .conf{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink); margin-bottom:10px}
+    .pop .btn{padding:9px}
+
+    /* ---- Toast ---- */
+    #toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); opacity:0;
+      background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--from);
+      padding:12px 18px; border-radius:12px; font-size:13.5px; font-weight:600; z-index:2000; transition:.3s;
+      box-shadow:0 10px 40px rgba(0,0,0,.5); max-width:90vw}
+    #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+    .map-hint{position:absolute; top:12px; left:12px; z-index:900; background:rgba(19,23,38,.9);
+      border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:12.5px; color:var(--from);
+      display:none}
+    .map-hint.show{display:block; animation:pulse-soft 1.4s infinite}
+    @keyframes pulse-soft{50%{opacity:.6}}
+    .leaflet-container{cursor:inherit}
+    body.placing .leaflet-container{cursor:crosshair}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="diamond"></div>
+      <div>
+        <h1>Último Recurso</h1>
+        <div class="tag">Cuando nadie te avisa, este lo hace · Noreste de México</div>
+      </div>
+    </div>
+    <div class="live"><span class="dot"></span> En vivo</div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="s-activos">0</div><div class="k">Reportes activos</div></div>
+      <div class="stat"><div class="v" id="s-conf">0</div><div class="k">Confirmaciones</div></div>
+      <div class="stat"><div class="v" id="s-zonas">0</div><div class="k">Zonas afectadas</div></div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div style="position:relative">
+      <div id="map"></div>
+      <div class="map-hint" id="map-hint">📍 Toca el mapa donde está el problema…</div>
+    </div>
+
+    <aside>
+      <div class="sec">
+        <h2>Filtrar por tipo</h2>
+        <div class="chips" id="f-tipo">
+          <span class="chip" data-tipo="agua">💧 Agua</span>
+          <span class="chip" data-tipo="aire">🌫️ Aire</span>
+          <span class="chip" data-tipo="otro">⚠️ Otro</span>
+        </div>
+        <h2 style="margin-top:14px">Severidad</h2>
+        <div class="chips" id="f-sev">
+          <span class="chip" data-sev="alta"><span class="sw" style="background:var(--alta)"></span>Alta</span>
+          <span class="chip" data-sev="media"><span class="sw" style="background:var(--media)"></span>Media</span>
+          <span class="chip" data-sev="baja"><span class="sw" style="background:var(--baja)"></span>Baja</span>
+        </div>
+        <div class="chips" style="margin-top:14px">
+          <span class="chip" id="toggle-heat">🔥 Mapa de calor</span>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2>Colabora · reporta tú</h2>
+        <button class="btn" id="btn-reportar">＋ Reportar un problema</button>
+        <div class="form" id="form">
+          <label>Tipo</label>
+          <select id="r-tipo">
+            <option value="agua">💧 Agua</option>
+            <option value="aire">🌫️ Aire</option>
+            <option value="otro">⚠️ Otro</option>
+          </select>
+          <label>¿Qué notaste?</label>
+          <textarea id="r-desc" placeholder="Ej: salió el agua café y huele raro"></textarea>
+          <button class="btn ghost" id="btn-colocar" style="margin-top:10px">📍 Colocar en el mapa</button>
+          <div class="hint">La IA interpretará tu reporte y lo sumará a la inteligencia colectiva de tu zona.</div>
+        </div>
+      </div>
+
+      <div class="sec" style="padding-bottom:8px"><h2 style="margin:0">Actividad reciente</h2></div>
+      <div class="feed" id="feed"></div>
+    </aside>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+  /* =====================================================================
+     DATOS — reportes semilla (zona Noreste). EDITA / AGREGA aquí (Dante).
+     El esquema es el "contrato" con el Agente de Telegram: el bot crea
+     objetos con esta MISMA forma y la web los pinta igual.
+     ===================================================================== */
+  const SEED = [
+    {id:'r1', tipo:'agua', subtipo:'turbia',          severidad:'alta',  lat:25.6866, lng:-100.3161, colonia:'Centro',         ciudad:'Monterrey',     confirmaciones:7, foto:null, desc:'Agua con alta turbidez y posible sedimento. No apta para consumo.'},
+    {id:'r2', tipo:'aire', subtipo:'mal olor',        severidad:'media', lat:25.7835, lng:-100.1873, colonia:'Apodaca Centro', ciudad:'Apodaca',       confirmaciones:3, foto:null, desc:'Mal olor en el ambiente: posible emisión industrial cercana.'},
+    {id:'r3', tipo:'agua', subtipo:'corte',           severidad:'media', lat:22.2553, lng:-97.8686,  colonia:'Árbol Grande',   ciudad:'Tampico',       confirmaciones:2, foto:null, desc:'Posible corte o falta de suministro de agua en la zona.'},
+    {id:'r4', tipo:'agua', subtipo:'exceso de cloro', severidad:'baja',  lat:25.7417, lng:-100.2826, colonia:'Anáhuac',        ciudad:'San Nicolás',   confirmaciones:1, foto:null, desc:'Olor fuerte a cloro: posible sobrecloración de la red.'},
+    {id:'r5', tipo:'aire', subtipo:'humo',            severidad:'alta',  lat:25.6776, lng:-100.2598, colonia:'La Pastora',     ciudad:'Guadalupe',     confirmaciones:9, foto:null, desc:'Presencia de humo: posible quema cercana que afecta la calidad del aire.'},
+    {id:'r6', tipo:'agua', subtipo:'turbia',          severidad:'media', lat:25.4232, lng:-101.0053, colonia:'Centro',         ciudad:'Saltillo',      confirmaciones:4, foto:null, desc:'Agua turbia reportada en varias casas de la colonia.'},
+    {id:'r7', tipo:'aire', subtipo:'mal olor',        severidad:'media', lat:26.0806, lng:-98.2880,  colonia:'Las Fuentes',    ciudad:'Reynosa',       confirmaciones:3, foto:null, desc:'Olor persistente, posible origen en zona industrial.'},
+    {id:'r8', tipo:'otro', subtipo:'sin clasificar',  severidad:'baja',  lat:23.7369, lng:-99.1411,  colonia:'Centro',         ciudad:'Cd. Victoria',  confirmaciones:1, foto:null, desc:'Reporte recibido, en espera de más detalle de la zona.'},
+  ];
+
+  // Pool para el "efecto Waze": reportes que van entrando en vivo.
+  const CIUDADES = [
+    {ciudad:'Monterrey',   colonia:'Mitras',        lat:25.7060, lng:-100.3550},
+    {ciudad:'Monterrey',   colonia:'Cumbres',       lat:25.7280, lng:-100.4030},
+    {ciudad:'San Nicolás', colonia:'Casa Bella',    lat:25.7510, lng:-100.2620},
+    {ciudad:'Guadalupe',   colonia:'Linda Vista',   lat:25.6900, lng:-100.2350},
+    {ciudad:'Apodaca',     colonia:'Huinalá',       lat:25.7700, lng:-100.1500},
+    {ciudad:'Santa Catarina',colonia:'La Fama',     lat:25.6730, lng:-100.4585},
+    {ciudad:'Escobedo',    colonia:'Centro',        lat:25.7970, lng:-100.3160},
+    {ciudad:'Tampico',     colonia:'Smith',         lat:22.2330, lng:-97.8610},
+    {ciudad:'Reynosa',     colonia:'Del Prado',     lat:26.0620, lng:-98.3070},
+    {ciudad:'Matamoros',   colonia:'Jardín',        lat:25.8690, lng:-97.5026},
+    {ciudad:'Saltillo',    colonia:'República',     lat:25.4400, lng:-100.9900},
+  ];
+  const EVENTOS = [
+    {tipo:'agua', subtipo:'turbia',          desc:'Reportan agua café saliendo de la llave.'},
+    {tipo:'agua', subtipo:'exceso de cloro', desc:'Olor fuerte a cloro en el agua.'},
+    {tipo:'agua', subtipo:'corte',           desc:'Sin suministro de agua desde hace horas.'},
+    {tipo:'agua', subtipo:'espuma',          desc:'Agua con espuma, posible contaminante.'},
+    {tipo:'aire', subtipo:'humo',            desc:'Se ve y huele humo en la zona.'},
+    {tipo:'aire', subtipo:'mal olor',        desc:'Mal olor intenso, posible emisión industrial.'},
+  ];
+
+  const EMOJI = {agua:'💧', aire:'🌫️', otro:'⚠️'};
+  let nextId = 100;
+
+  /* ---- Estado ---- */
+  const state = {
+    reportes: [],
+    markers: {},                 // id -> L.marker
+    tipo: new Set(['agua','aire','otro']),
+    sev:  new Set(['alta','media','baja']),
+    heat: null, heatOn:false,
+    placing:false, pendiente:null,
+  };
+
+  /* ---- Mapa ---- */
+  const map = L.map('map', {zoomControl:true, attributionControl:true}).setView([25.0, -99.7], 7);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19,
+  }).addTo(map);
+
+  /* ---- Helpers ---- */
+  function icono(r){
+    return L.divIcon({
+      className:'', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-16],
+      html:`<div class="pin ${r.severidad} ${r._nuevo?'drop':''}" style="position:relative">${EMOJI[r.tipo]}</div>`,
+    });
+  }
+  function popupHtml(r){
+    const foto = r.foto ? `<img src="${r.foto}" alt="">` : `<div class="ph">${EMOJI[r.tipo]}</div>`;
+    return `<div class="pop">
+      ${foto}
+      <h3>${EMOJI[r.tipo]} ${cap(r.tipo)} · ${r.subtipo}</h3>
+      <span class="badge ${r.severidad}">${r.severidad}</span>
+      <span style="font-size:12px;color:var(--muted)"> · ${r.colonia||''}, ${r.ciudad||''}</span>
+      <div class="ia">${r.desc}</div>
+      <div class="conf">👥 <b>${r.confirmaciones}</b>&nbsp;vecinos confirman esto</div>
+      <button class="btn" onclick="confirmar('${r.id}')">✋ Yo también lo veo</button>
+    </div>`;
+  }
+  const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+  function visible(r){ return state.tipo.has(r.tipo) && state.sev.has(r.severidad); }
+
+  /* ---- Render de un reporte ---- */
+  function addReporte(r, animar){
+    r._nuevo = !!animar;
+    state.reportes.unshift(r);
+    const m = L.marker([r.lat, r.lng], {icon:icono(r)}).bindPopup(popupHtml(r));
+    state.markers[r.id] = m;
+    if (visible(r)) m.addTo(map);
+    pushFeed(r);
+    if (animar){ setTimeout(()=>{ r._nuevo=false; m.setIcon(icono(r)); }, 600); }
+    refresh();
+  }
+
+  function confirmar(id){
+    const r = state.reportes.find(x=>x.id===id); if(!r) return;
+    r.confirmaciones++;
+    const antes = r.severidad;
+    if (r.confirmaciones>=8) r.severidad='alta';
+    else if (r.confirmaciones>=3 && r.severidad==='baja') r.severidad='media';
+    const m = state.markers[id];
+    m.setIcon(icono(r)); m.setPopupContent(popupHtml(r)); m.openPopup();
+    if (r.severidad!==antes) toast(`⚠️ Alerta reforzada en ${r.colonia||r.ciudad}: subió a severidad ${r.severidad}.`);
+    else toast('✓ Gracias. Tu confirmación refuerza la alerta de la zona.');
+    refresh();
+  }
+  window.confirmar = confirmar;
+
+  /* ---- Feed lateral ---- */
+  function pushFeed(r){
+    const feed = document.getElementById('feed');
+    const el = document.createElement('div');
+    el.className = `card ${r.severidad}`; el.id = 'f-'+r.id;
+    el.innerHTML = `<div class="top"><span class="emoji">${EMOJI[r.tipo]}</span> ${cap(r.tipo)} · ${r.subtipo}</div>
+      <div class="desc">${r.desc}</div>
+      <div class="foot"><span class="badge ${r.severidad}">${r.severidad}</span> 📍 ${r.colonia||''}, ${r.ciudad||''} · 👥 ${r.confirmaciones}</div>`;
+    el.onclick = ()=>{ map.flyTo([r.lat,r.lng], 12, {duration:.8}); state.markers[r.id].openPopup(); };
+    feed.prepend(el);
+    while (feed.children.length>40) feed.removeChild(feed.lastChild);
+  }
+
+  /* ---- Stats + heatmap + visibilidad ---- */
+  function refresh(){
+    const vis = state.reportes.filter(visible);
+    document.getElementById('s-activos').textContent = vis.length;
+    document.getElementById('s-conf').textContent = state.reportes.reduce((a,r)=>a+r.confirmaciones,0);
+    document.getElementById('s-zonas').textContent = new Set(vis.map(r=>r.ciudad)).size;
+    // visibilidad de markers según filtros
+    state.reportes.forEach(r=>{
+      const m = state.markers[r.id]; if(!m) return;
+      if (visible(r)){ if(!map.hasLayer(m)) m.addTo(map); }
+      else if (map.hasLayer(m)) map.removeLayer(m);
+    });
+    updateHeat();
+  }
+  function updateHeat(){
+    if (!state.heatOn) return;
+    const w = {alta:1, media:.6, baja:.3};
+    const pts = state.reportes.filter(visible).map(r=>[r.lat, r.lng, w[r.severidad]]);
+    if (state.heat) map.removeLayer(state.heat);
+    state.heat = L.heatLayer(pts, {radius:38, blur:26, maxZoom:12,
+      gradient:{0.2:'#23d6a6',0.5:'#ffb020',0.9:'#ff4d5e'}}).addTo(map);
+  }
+
+  /* ---- Filtros ---- */
+  function bindChips(containerId, setRef, key){
+    document.querySelectorAll(`#${containerId} .chip`).forEach(c=>{
+      c.onclick = ()=>{
+        const v = c.dataset[key];
+        if (setRef.has(v)){ setRef.delete(v); c.classList.add('off'); }
+        else { setRef.add(v); c.classList.remove('off'); }
+        refresh();
+      };
+    });
+  }
+  bindChips('f-tipo', state.tipo, 'tipo');
+  bindChips('f-sev',  state.sev,  'sev');
+
+  document.getElementById('toggle-heat').onclick = (e)=>{
+    state.heatOn = !state.heatOn; e.target.classList.toggle('off', !state.heatOn);
+    if (state.heatOn) updateHeat();
+    else if (state.heat){ map.removeLayer(state.heat); state.heat=null; }
+  };
+
+  /* ---- Colaborar: reportar desde la web ---- */
+  const form = document.getElementById('form');
+  document.getElementById('btn-reportar').onclick = ()=> form.classList.toggle('open');
+  document.getElementById('btn-colocar').onclick = ()=>{
+    const desc = document.getElementById('r-desc').value.trim();
+    state.pendiente = { tipo: document.getElementById('r-tipo').value, desc };
+    state.placing = true;
+    document.body.classList.add('placing');
+    document.getElementById('map-hint').classList.add('show');
+  };
+  map.on('click', (e)=>{
+    if (!state.placing) return;
+    state.placing = false; document.body.classList.remove('placing');
+    document.getElementById('map-hint').classList.remove('show');
+    const p = state.pendiente;
+    const ia = interpretar(p.tipo, p.desc);         // "IA" simulada en la web
+    addReporte({
+      id:'r'+(nextId++), tipo:p.tipo, subtipo:ia.subtipo, severidad:ia.severidad,
+      lat:e.latlng.lat, lng:e.latlng.lng, colonia:'Tu ubicación', ciudad:'Noreste',
+      confirmaciones:1, foto:null, desc: ia.desc,
+    }, true);
+    form.classList.remove('open'); document.getElementById('r-desc').value='';
+    toast('✅ ¡Gracias! Tu reporte ya está en el mapa.');
+    map.flyTo([e.latlng.lat, e.latlng.lng], 12, {duration:.8});
+  });
+
+  // Mini "IA" mock para reportes hechos desde la web (espejo del agente).
+  function interpretar(tipo, texto){
+    const t = (texto||'').toLowerCase();
+    const has = (...k)=>k.some(x=>t.includes(x));
+    if (tipo==='agua'){
+      if (has('cafe','café','turbia','lodo','sucia')) return {subtipo:'turbia', severidad:'alta', desc:'Agua con alta turbidez. No apta para consumo.'};
+      if (has('cloro')) return {subtipo:'exceso de cloro', severidad:'media', desc:'Posible sobrecloración de la red.'};
+      if (has('sin agua','no hay','corte')) return {subtipo:'corte', severidad:'media', desc:'Posible corte de suministro en la zona.'};
+      if (has('espuma')) return {subtipo:'espuma', severidad:'media', desc:'Agua con espuma, posible contaminante.'};
+      return {subtipo:'anomalía', severidad:'media', desc: texto||'Reporte de agua en la zona.'};
+    }
+    if (tipo==='aire'){
+      if (has('humo','quema','incendio')) return {subtipo:'humo', severidad:'alta', desc:'Humo detectado, afecta la calidad del aire.'};
+      if (has('olor','gas','azufre')) return {subtipo:'mal olor', severidad:'media', desc:'Mal olor, posible emisión industrial.'};
+      return {subtipo:'calidad del aire', severidad:'media', desc: texto||'Reporte de aire en la zona.'};
+    }
+    return {subtipo:'sin clasificar', severidad:'baja', desc: texto||'Reporte recibido, requiere más detalle.'};
+  }
+
+  /* ---- Toast ---- */
+  let toastT;
+  function toast(msg){
+    const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('show'), 3200);
+  }
+
+  /* ---- Arranque ---- */
+  SEED.forEach(r=>addReporte(r, false));
+  // Encuadra el mapa a todos los pines del Noreste.
+  const grupo = L.featureGroup(Object.values(state.markers));
+  map.fitBounds(grupo.getBounds().pad(0.15));
+
+  /* ---- Motor "efecto Waze": entran reportes en vivo ---- */
+  setInterval(()=>{
+    const c = CIUDADES[Math.floor(Math.random()*CIUDADES.length)];
+    const ev = EVENTOS[Math.floor(Math.random()*EVENTOS.length)];
+    const jit = ()=> (Math.random()-.5)*0.05;
+    const sev = Math.random()<.25 ? 'alta' : Math.random()<.6 ? 'media' : 'baja';
+    addReporte({
+      id:'r'+(nextId++), tipo:ev.tipo, subtipo:ev.subtipo, severidad:sev,
+      lat:c.lat+jit(), lng:c.lng+jit(), colonia:c.colonia, ciudad:c.ciudad,
+      confirmaciones:1, foto:null, desc:ev.desc,
+    }, true);
+  }, 7000);
+  </script>
+</body>
+</html>
