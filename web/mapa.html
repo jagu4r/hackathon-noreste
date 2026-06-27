@@ -1017,15 +1017,22 @@
     reader.readAsDataURL(file);
   };
 
-  // Lanza el análisis de la foto cargada con el tipo seleccionado
+  // Lanza el análisis de la foto cargada con el tipo seleccionado (Claude)
   async function correrAnalisis() {
     if (!state.fotoDataUrl) return;
     fotoIa.className = 'foto-ia loading';
     fotoIa.innerHTML = '<span class="spin"></span> Analizando imagen con IA…';
-    const res = await analizarFoto(state.fotoDataUrl, rTipo.value);
-    state.fotoAnalisis = res;
-    fotoIa.className = 'foto-ia sev-' + res.severidad;
-    fotoIa.innerHTML = `<b>IA · ${res.subtipo}:</b> ${res.desc}`;
+    try {
+      const res = await analizarFoto(state.fotoDataUrl, rTipo.value, rDesc.value.trim());
+      state.fotoAnalisis = res;
+      fotoIa.className = 'foto-ia sev-' + res.severidad;
+      fotoIa.innerHTML = `<b>IA · ${res.subtipo}:</b> ${res.desc}`;
+    } catch (err) {
+      console.error('Análisis de foto falló:', err);
+      state.fotoAnalisis = null;
+      fotoIa.className = 'foto-ia';
+      fotoIa.innerHTML = '⚠️ No se pudo analizar la foto. Revisa que el servidor esté corriendo (bun run server.js) y que ANTHROPIC_API_KEY esté configurada.';
+    }
   }
 
   // Si ya hay foto y cambia el tipo, re-analiza con el nuevo contexto
@@ -1048,21 +1055,28 @@
     document.getElementById('map-hint').classList.add('show');
   };
 
-  map.on('click', (e) => {
+  map.on('click', async (e) => {
     if (!state.placing) return;
     state.placing = false;
     document.body.classList.remove('placing');
     document.getElementById('map-hint').classList.remove('show');
     const p = state.pendiente;
 
-    // Si hubo foto, la IA de visión manda; el texto se suma como detalle.
+    // Si hubo foto, ya la analizó Claude al adjuntarla; el texto se suma como detalle.
     let ia, foto = null;
     if (state.fotoAnalisis) {
       ia   = { ...state.fotoAnalisis };
       foto = state.fotoDataUrl;
       if (p.desc) ia.desc += ` · El vecino agrega: “${p.desc}”.`;
     } else {
-      ia = interpretar(p.tipo, p.desc);
+      // Reporte sin foto: Claude interpreta el texto en el backend.
+      toast('🧠 Interpretando tu reporte con IA…');
+      try {
+        ia = await analizarFoto(null, p.tipo, p.desc);
+      } catch (err) {
+        console.warn('Backend no disponible, uso respaldo local:', err);
+        ia = interpretar(p.tipo, p.desc);   // respaldo offline para que la demo no se rompa
+      }
     }
 
     addReporte({
@@ -1079,7 +1093,7 @@
     map.flyTo([e.latlng.lat, e.latlng.lng], 13, { duration: 0.75 });
   });
 
-  /* ── Mini IA mock ────────────────────────────────────────── */
+  /* ── Respaldo OFFLINE (solo si el backend con Claude no responde) ─── */
   function interpretar(tipo, texto) {
     const t   = (texto || '').toLowerCase();
     const has = (...k) => k.some(x => t.includes(x));
@@ -1099,110 +1113,22 @@
   }
 
   /* ============================================================
-     IA de VISIÓN (mockeable).
-     - Sin llave -> análisis local de la foto con <canvas>
-       (tono / brillo / contraste): la demo NUNCA se rompe.
-     - Con llave de Gemini -> análisis real (es hackathon Google).
-       Pega tu llave en GEMINI_API_KEY para activarlo.
+     IA de VISIÓN — REAL, vía backend con Claude.
+     El navegador NO habla con Claude directo (la API key vive en el
+     servidor). Aquí solo le pegamos a /api/analizar-foto y el backend
+     (server.js) llama a Claude Opus 4.8 con visión y salida estructurada.
+     Devuelve { subtipo, severidad, desc }.
      ============================================================ */
-  const GEMINI_API_KEY = '';            // vacío = modo mock
-  const GEMINI_MODEL    = 'gemini-2.0-flash';
-
-  async function analizarFoto(dataUrl, tipo) {
-    if (GEMINI_API_KEY) {
-      try { return await analizarFotoGemini(dataUrl, tipo); }
-      catch (err) { console.warn('Gemini falló, uso mock:', err); }
-    }
-    return analizarFotoMock(dataUrl, tipo);
-  }
-
-  /* --- Modo real: Gemini Vision --- */
-  async function analizarFotoGemini(dataUrl, tipo) {
-    const mime   = dataUrl.slice(5, dataUrl.indexOf(';'));
-    const base64 = dataUrl.split(',')[1];
-    const prompt =
-      `Eres un analista ambiental ciudadano del Noreste de México. ` +
-      `Observa esta foto de ${tipo}. Si es AGUA, evalúa turbidez/color/espuma ` +
-      `y di qué tan probable es que NO sea apta para consumo. Si es AIRE, evalúa ` +
-      `bruma/humo/contaminación visible. Responde SOLO un JSON con: ` +
-      `{"subtipo": string corto, "severidad": "alta"|"media"|"baja", "desc": frase clara para un ciudadano}.`;
-    const body = {
-      contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: mime, data: base64 } } ] }],
-      generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
-    };
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const json = await res.json();
-    const txt  = json?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    const out  = JSON.parse(txt);
-    return {
-      subtipo:   out.subtipo || 'analizado',
-      severidad: ['alta','media','baja'].includes(out.severidad) ? out.severidad : 'media',
-      desc:      out.desc || 'Análisis de imagen completado por IA.',
-    };
-  }
-
-  /* --- Modo mock: estadística de la imagen con <canvas> --- */
-  function analizarFotoMock(dataUrl, tipo) {
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        const W = 64, H = Math.max(1, Math.round(64 * img.height / img.width));
-        const c = document.createElement('canvas');
-        c.width = W; c.height = H;
-        const ctx = c.getContext('2d');
-        ctx.drawImage(img, 0, 0, W, H);
-        const { data } = ctx.getImageData(0, 0, W, H);
-        const n = data.length / 4;
-        let r = 0, g = 0, b = 0, lum = 0, lum2 = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          r += data[i]; g += data[i + 1]; b += data[i + 2];
-          const L = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-          lum += L; lum2 += L * L;
-        }
-        r /= n; g /= n; b /= n;
-        const bright   = lum / n;
-        const contrast = Math.sqrt(Math.max(0, lum2 / n - bright * bright)); // desv. estándar
-        const max = Math.max(r, g, b), min = Math.min(r, g, b);
-        const sat = max === 0 ? 0 : (max - min) / max;
-        resolve(interpretarVisual(tipo, { r, g, b, bright, contrast, sat }));
-      };
-      img.onerror = () => resolve({ subtipo: 'sin clasificar', severidad: 'media', desc: 'No se pudo leer la imagen.' });
-      img.src = dataUrl;
+  async function analizarFoto(dataUrl, tipo, texto) {
+    const res = await fetch('/api/analizar-foto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, texto: texto || '', imagen: dataUrl || null }),
     });
-  }
-
-  // Reglas visuales: traducen las métricas a un diagnóstico ciudadano.
-  function interpretarVisual(tipo, m) {
-    if (tipo === 'agua') {
-      const cafe  = m.r > m.b + 12 && m.r >= m.g - 4;     // tinte café/amarillo
-      const verde = m.g > m.r + 10 && m.g > m.b + 8;       // tinte verdoso
-      if (cafe && m.bright < 150)
-        return { subtipo: 'turbia', severidad: 'alta',
-          desc: 'La IA detecta tono café y baja luminosidad: agua con alta turbidez. Poco probable que sea apta para consumo.' };
-      if (verde)
-        return { subtipo: 'posible contaminación', severidad: 'alta',
-          desc: 'La IA detecta tono verdoso: posibles algas o contaminante. No la consumas hasta confirmar.' };
-      if (m.bright > 175 && m.sat < 0.22)
-        return { subtipo: 'sin anomalía visible', severidad: 'baja',
-          desc: 'La IA ve agua clara y brillante: probablemente en buen estado. Aun así, confírmalo con vecinos.' };
-      return { subtipo: 'turbidez moderada', severidad: 'media',
-        desc: 'La IA detecta turbidez moderada: el agua se ve dudosa, conviene no consumirla hasta confirmar.' };
-    }
-    if (tipo === 'aire') {
-      const brumoso = m.contrast < 38;                    // poca nitidez = neblina/humo
-      const grisCafe = m.sat < 0.18 && m.bright < 165;
-      if (brumoso && grisCafe)
-        return { subtipo: 'mala calidad', severidad: 'alta',
-          desc: 'La IA ve aire brumoso, grisáceo y con poco contraste: el aire se ve mal, posible humo o alta contaminación.' };
-      if (brumoso)
-        return { subtipo: 'bruma', severidad: 'media',
-          desc: 'La IA detecta bruma y poca nitidez: calidad del aire posiblemente reducida.' };
-      return { subtipo: 'aceptable', severidad: 'baja',
-        desc: 'La IA ve buen contraste y cielo despejado: el aire se ve aceptable.' };
-    }
-    return { subtipo: 'sin clasificar', severidad: m.bright < 90 ? 'media' : 'baja',
-      desc: 'La IA registró la imagen. Agrega una descripción para afinar el diagnóstico.' };
+    if (!res.ok) throw new Error('El servidor de IA respondió ' + res.status);
+    const out = await res.json();
+    if (out.error) throw new Error(out.error);
+    return { subtipo: out.subtipo, severidad: out.severidad, desc: out.descripcion_ia };
   }
 
   /* ── Toast ───────────────────────────────────────────────── */
