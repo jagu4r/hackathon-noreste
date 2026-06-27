@@ -1,0 +1,15 @@
+{
+  "name": "ultimo-recurso-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend mínimo de Último Recurso: API de reportes compartida entre el bot de Telegram y la web del mapa.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
