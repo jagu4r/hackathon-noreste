@@ -793,6 +793,17 @@
   const EMOJI = { agua:'💧', aire:'🌫️', otro:'⚠️' };
   let nextId = 100;
 
+  /* Backend de reportes (server/).
+     - En GitHub Pages (https): usa el túnel público por defecto.
+     - En local: usa localhost:3001.
+     - Override en cualquier lado con ?api=https://tu-backend
+       (útil si el túnel cambia de URL: no hay que volver a publicar). */
+  const BACKEND_URL =
+    new URLSearchParams(location.search).get('api')
+    || (location.hostname.endsWith('github.io')
+          ? 'https://language-theory-const-maker.trycloudflare.com'
+          : 'http://localhost:3001');
+
   /* ── Estado ──────────────────────────────────────────────── */
   const state = {
     reportes: [],
@@ -802,6 +813,7 @@
     heat: null, heatOn: false,
     placing: false, pendiente: null,
     fotoDataUrl: null, fotoAnalisis: null,
+    online: false,
   };
 
   /* ── Mapa ────────────────────────────────────────────────── */
@@ -854,13 +866,26 @@
     refresh();
   }
 
-  function confirmar(id) {
+  async function confirmar(id) {
     const r = state.reportes.find(x => x.id === id);
     if (!r) return;
-    r.confirmaciones++;
     const antes = r.severidad;
-    if (r.confirmaciones >= 8) r.severidad = 'alta';
-    else if (r.confirmaciones >= 3 && r.severidad === 'baja') r.severidad = 'media';
+    if (state.online) {
+      // Persiste en el backend (la fuente de verdad) y usa lo que devuelve.
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/reportes/${id}/confirmar`, { method: 'POST' });
+        if (!res.ok) throw new Error('backend ' + res.status);
+        const u = await res.json();
+        r.confirmaciones = u.confirmaciones;
+        r.severidad = u.severidad;
+      } catch {
+        r.confirmaciones++; // si el backend falla, al menos refleja localmente
+      }
+    } else {
+      r.confirmaciones++;
+      if (r.confirmaciones >= 8) r.severidad = 'alta';
+      else if (r.confirmaciones >= 3 && r.severidad === 'baja') r.severidad = 'media';
+    }
     const m = state.markers[id];
     m.setIcon(icono(r));
     m.setPopupContent(popupHtml(r));
@@ -1141,24 +1166,63 @@
     toastT = setTimeout(() => el.classList.remove('show'), 3400);
   }
 
-  /* ── Arranque ────────────────────────────────────────────── */
-  SEED.forEach(r => addReporte(r, false));
-  const grupo = L.featureGroup(Object.values(state.markers));
-  map.fitBounds(grupo.getBounds().pad(0.15));
+  /* ============================================================
+     CONEXIÓN AL BACKEND (server/) — el mapa lee reportes REALES.
+     Si el backend responde, usamos sus datos y poleamos los nuevos
+     (p.ej. los que crea el bot de Telegram). Si NO responde, caemos
+     al mock con el efecto Waze simulado (para poder editar offline).
+     ============================================================ */
+  async function cargarBackend() {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/reportes`, { cache: 'no-store' });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null; // backend apagado → null → fallback al mock
+    }
+  }
 
-  /* ── Efecto Waze: reportes en vivo ───────────────────────── */
-  setInterval(() => {
-    const c   = CIUDADES[Math.floor(Math.random() * CIUDADES.length)];
-    const ev  = EVENTOS[Math.floor(Math.random() * EVENTOS.length)];
-    const jit = () => (Math.random() - 0.5) * 0.05;
-    const sev = Math.random() < 0.25 ? 'alta' : Math.random() < 0.6 ? 'media' : 'baja';
-    addReporte({
-      id: 'r' + (nextId++), tipo: ev.tipo, subtipo: ev.subtipo, severidad: sev,
-      lat: c.lat + jit(), lng: c.lng + jit(),
-      colonia: c.colonia, ciudad: c.ciudad,
-      confirmaciones: 1, foto: null, desc: ev.desc,
-    }, true);
-  }, 7000);
+  async function pollBackend() {
+    const server = await cargarBackend();
+    if (!server) return;
+    // Agrega solo los que aún no están en el mapa (los nuevos del bot/web).
+    for (const r of [...server].reverse()) {
+      if (!state.markers[r.id]) addReporte(r, true);
+    }
+  }
+
+  function iniciarSimulacion() {
+    // Efecto Waze SIMULADO — solo cuando no hay backend (modo demo offline).
+    setInterval(() => {
+      const c   = CIUDADES[Math.floor(Math.random() * CIUDADES.length)];
+      const ev  = EVENTOS[Math.floor(Math.random() * EVENTOS.length)];
+      const jit = () => (Math.random() - 0.5) * 0.05;
+      const sev = Math.random() < 0.25 ? 'alta' : Math.random() < 0.6 ? 'media' : 'baja';
+      addReporte({
+        id: 'r' + (nextId++), tipo: ev.tipo, subtipo: ev.subtipo, severidad: sev,
+        lat: c.lat + jit(), lng: c.lng + jit(),
+        colonia: c.colonia, ciudad: c.ciudad,
+        confirmaciones: 1, foto: null, desc: ev.desc,
+      }, true);
+    }, 7000);
+  }
+
+  /* ── Arranque ────────────────────────────────────────────── */
+  (async () => {
+    const server  = await cargarBackend();
+    const inicial = (server && server.length) ? server : SEED;
+    inicial.forEach(r => addReporte(r, false));
+    if (Object.keys(state.markers).length) {
+      const grupo = L.featureGroup(Object.values(state.markers));
+      map.fitBounds(grupo.getBounds().pad(0.15));
+    }
+    if (server) {
+      state.online = true;            // backend vivo
+      setInterval(pollBackend, 5000); // trae reportes reales (incluye los del bot)
+    } else {
+      iniciarSimulacion();            // sin backend: demo simulada
+    }
+  })();
   </script>
 </body>
 </html>
